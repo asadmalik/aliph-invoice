@@ -17,6 +17,9 @@ importers:
       '@nuxt/ui':
         specifier: ^3.0.1
         version: 3.0.1(@babel/parser@7.27.0)(change-case@5.4.4)(db0@0.3.1)(embla-carousel@8.5.2)(ioredis@5.6.0)(magicast@0.3.5)(typescript@5.8.2)(vite@6.2.3(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(yaml@2.7.0))
+      dexie:
+        specifier: ^4.0.11
+        version: 4.0.11
       nuxt:
         specifier: ^3.16.1
         version: 3.16.1(@parcel/watcher@2.5.1)(db0@0.3.1)(eslint@9.23.0(jiti@2.4.2))(ioredis@5.6.0)(lightningcss@1.29.2)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.37.0)(terser@5.39.0)(typescript@5.8.2)(vite@6.2.3(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0)
@@ -1888,6 +1891,9 @@ packages:
 
   devalue@5.1.1:
     resolution: {integrity: sha512-maua5KUiapvEwiEAe+XnlZ3Rh0GD+qI1J/nb9vrJc3muPXvcF/8gXYTWF76+5DAqHyDUtOIImEuo0YKE9mshVw==}
+
+  dexie@4.0.11:
+    resolution: {integrity: sha512-SOKO002EqlvBYYKQSew3iymBoN2EQ4BDw/3yprjh7kAfFzjBYkaMNa/pZvcA7HSWlcKSQb9XhPe3wKyQ0x4A8A==}
 
   dfa@1.2.0:
     resolution: {integrity: sha512-ED3jP8saaweFTjeGX8HQPjeC1YYyZs98jGNZx6IiBvxW7JG5v492kamAQB3m2wop07CvU/RQmzcKr6bgcC5D/Q==}
@@ -6272,6 +6278,8 @@ snapshots:
   detect-libc@2.0.3: {}
 
   devalue@5.1.1: {}
+
+  dexie@4.0.11: {}
 
   dfa@1.2.0: {}
 

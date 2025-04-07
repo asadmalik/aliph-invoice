@@ -63,7 +63,7 @@ import { computed, h, ref, watch } from 'vue'
       header: 'Item',
       cell: ({ row }) => {
         if (mode.value === 'edit') {
-          return h(UInput, {
+          return h(UInput, { class: 'w-80' }, {
             modelValue: row.original.item,
             'onUpdate:modelValue': (val: string) => (row.original.item = val),
             placeholder: 'Type or select an item'
@@ -75,10 +75,11 @@ import { computed, h, ref, watch } from 'vue'
     },
     {
       accessorKey: 'quantity',
+      maxSize: 120,
       header: 'Quantity',
       cell: ({ row }) => {
         if (mode.value === 'edit') {
-          return h(UInput, {
+          return h(UInput, { class: 'w-20' }, {
             type: 'number',
             modelValue: row.original.quantity,
             'onUpdate:modelValue': (val: number) => (row.original.quantity = val),
@@ -91,10 +92,12 @@ import { computed, h, ref, watch } from 'vue'
     },
     {
       accessorKey: 'rate',
+      maxSize: 80,
+      size: 80,
       header: 'Rate',
       cell: ({ row }) => {
         if (mode.value === 'edit') {
-          return h(UInput, {
+          return h(UInput, { class: 'w-20' }, {
             type: 'number',
             modelValue: row.original.rate,
             'onUpdate:modelValue': (val: number) => (row.original.rate = val),

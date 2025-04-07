@@ -1,11 +1,13 @@
 <template>
   <div>
     <UContainer as="div" class="max-w-5xl p-7 flex flex-col gap-6">
-      <div class="w-full flex-row items-start align-middle">
-        <UFormField label="Customer Name" labelPlacement="bottom">
-          <CustomerSelect />
+      <div class="w-full flex flex-row justify-between align-middle">
+        <UFormField label="Customer Name" label-placement="bottom">
+          <CustomerSelect v-model="selectedCustomer" />
         </UFormField>
-
+        <UFormField label="Invoice #" size="lg">
+          <UInput v-model="invoice.invoiceNumber" class="w-96" />
+        </UFormField>
         <!-- <UICustomerSelect></UICustomerSelect> -->
         <!-- <UFormField label="Customer Name" labelPlacement="bottom">
           <USelect :items="customers" value-key="email" label-key="name" placeholder="Select Customer" v-model="selectedCustomer"></USelect>
@@ -13,21 +15,16 @@
         <UBadge>{{ selectedCustomer }}</UBadge> -->
       </div>
 
-      <div class="w-full flex flex-row items-stretch">
-        <UFormField label="Invoice #" size="lg">
-          <UInput v-model="invoice.invoiceNumber" class="w-96" />
-        </UFormField>
-
-      </div>
+      <div class="w-full flex flex-row items-stretch" />
 
       <div class="w-full flex flex-row items-stretch justify-between gap-7">
-        <UFormField label="Invoice Date" labelPlacement="top" size="lg">
+        <UFormField label="Invoice Date" label-placement="top" size="lg">
           <UInput v-model="invoice.invoiceDate" type="date" class="w-72" />
         </UFormField>
-        <UFormField label="Terms" labelPlacement="top" size="lg">
+        <UFormField label="Terms" label-placement="top" size="lg">
           <USelect v-model="invoice.terms" :items="termsOptions" class="w-72" />
         </UFormField>
-        <UFormField label="Due Date" labelPlacement="top" size="lg">
+        <UFormField label="Due Date" label-placement="top" size="lg">
           <UInput v-model="invoice.dueDate" type="date" class="w-72" />
         </UFormField>
 
@@ -89,11 +86,11 @@
         </table> -->
 
 
-            <InvoiceItemsTable :items="invoice.items" :taxOptions="taxOptions" mode="edit"
+            <InvoiceItemsTable :items="invoice.items" :tax-options="taxOptions" mode="edit"
               @update:items="invoice.items = $event" />
 
 
-              
+
           </template>
         </UCard>
       </div>
@@ -104,6 +101,7 @@
 </template>
 
 <script lang="ts" setup>
+
 
   import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
 import CustomerSelect from '~~/components/ui/CustomerSelect.vue';
@@ -123,9 +121,6 @@ import CustomerSelect from '~~/components/ui/CustomerSelect.vue';
     items: [
       { item: "", quantity: 0, rate: 0, tax: 0 },
       { item: "", quantity: 0, rate: 0, tax: 0 },
-      { item: "", quantity: 0, rate: 0, tax: 0 },
-      { item: "", quantity: 0, rate: 0, tax: 0 },
-      { item: "", quantity: 0, rate: 0, tax: 0 }
     ],
     notes: "Thanks for your business.",
     termsAndConditions: "",
@@ -234,7 +229,7 @@ import CustomerSelect from '~~/components/ui/CustomerSelect.vue';
       if (newTax !== null) {
         const parsed = parseInt(newTax);
         if (!isNaN(parsed) && parsed >= 0 && parsed <= 99) {
-          currencyOptions.splice(currencyOptions.length - 1, 0, {
+          currencyOptions.value.splice(currencyOptions.value.length - 1, 0, {
             label: `${parsed}%`,
             value: parsed
           });

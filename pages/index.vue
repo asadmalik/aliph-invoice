@@ -7,7 +7,7 @@
         <!-- Logo & Company Info -->
         <div>
           <!-- Update the src to your actual logo path -->
-          <img src="./../assets/img/aliphmarketing_LOGO_SYMBOL.svg" alt="Aliph Marketing Logo" class="w-12 mr-2" />
+          <img src="./../assets/img/aliphmarketing_LOGO_SYMBOL.svg" alt="Aliph Marketing Logo" class="w-12 mr-2" >
           <h2 class="text-lg font-semibold">Aliph Marketing Studio</h2>
           <p>Web: https://aliphmarketing.com</p>
           <p>Email: accounts@aliphmarketing.com</p>
@@ -15,11 +15,11 @@
         </div>
 
         <!-- Optional Divider -->
-        <hr class="my-2 border-gray-300" />
+        <hr class="my-2 border-gray-300" >
 
         <!-- Bill To -->
         <div>
-          <UFormField label="Bill To:" labelPlacement="top">
+          <UFormField label="Bill To:" label-placement="top">
             <UTextarea v-model="invoice.billTo" :rows="5" class="w-96" />
           </UFormField>          
         </div>
@@ -42,7 +42,7 @@
         </p>
         <!-- Currency Dropdown -->
         <div class="mt-4">
-          <UFormField label="Currency:" labelPlacement="top">
+          <UFormField label="Currency:" label-placement="top">
           <USelect
             v-model="invoice.currencyCode"
             value-key="code"
@@ -57,19 +57,19 @@
     <!-- Customer & Invoice Info -->
     <div class="grid grid-cols-3 gap-4 mb-6 print:hidden">
       <!-- Customer Name -->
-      <UFormField label="Customer Name" labelPlacement="top">
+      <UFormField label="Customer Name" label-placement="top">
         <UInput v-model="invoice.customerName" placeholder="Select or add a customer" />
       </UFormField>
       <!-- Invoice Number -->
       <div>
-        <UFormField label="Invoice #" labelPlacement="top">
+        <UFormField label="Invoice #" label-placement="top">
           <UInput v-model="invoice.invoiceNumber" />
         </UFormField>
       </div>
       <!-- Invoice Date -->
       <div>
-        <UFormField label="Invoice Date" labelPlacement="top">
-          <UInput type="date" v-model="invoice.invoiceDate" />
+        <UFormField label="Invoice Date" label-placement="top">
+          <UInput v-model="invoice.invoiceDate" type="date" />
         </UFormField>
       </div>
     </div>
@@ -79,14 +79,14 @@
       <!-- Terms -->
       <div>
 
-        <UFormField label="Terms" labelPlacement="top">
+        <UFormField label="Terms" label-placement="top">
           <USelect v-model="invoice.terms" :items="termsOptions" />
         </UFormField>
       </div>
       <!-- Due Date -->
       <div>
-        <UFormField label="Due Date" labelPlacement="top">
-          <UInput type="date" v-model="invoice.dueDate" />
+        <UFormField label="Due Date" label-placement="top">
+          <UInput v-model="invoice.dueDate" type="date" />
         </UFormField>
       </div>
     </div>
@@ -106,12 +106,12 @@
       <template #default>
         <table class="w-full border-collapse border-gray-300 text-sm">
           <colgroup>
-            <col style="width: 50%;" />
-            <col style="width: 8%;" />
-            <col style="width: 8%;" />
-            <col style="width: 12%;" />
-            <col />
-            <col v-if="!printMode" style="width: 2%;" />
+            <col style="width: 50%;" >
+            <col style="width: 8%;" >
+            <col style="width: 8%;" >
+            <col style="width: 12%;" >
+            <col >
+            <col v-if="!printMode" style="width: 2%;" >
           </colgroup>
           <thead class="bg-gray-100">
             <tr>
@@ -120,7 +120,7 @@
               <th class="border p-2 text-left">Rate</th>
               <th class="border p-2 text-left">Tax</th>
               <th class="border p-2 text-right">Amount</th>
-              <th v-if="!printMode" class="border p-2 text-center w-10"></th>
+              <th v-if="!printMode" class="border p-2 text-center w-10"/>
             </tr>
           </thead>
           <tbody>
@@ -135,7 +135,7 @@
                 <UInput v-model.number="row.rate" type="number" min="0" />
               </td>
               <td class="border p-2">
-                <USelect v-model="row.tax" :items="taxOptions" @update:modelValue="handleTaxChange(row)" />
+                <USelect v-model="row.tax" :items="taxOptions" @update:model-value="handleTaxChange(row)" />
               </td>
               <td class="border p-2 text-right">
                 {{ formatCurrency(rowAmount(row)) }}
@@ -168,7 +168,8 @@
               <UUTextArea v-model="invoice.notes" :rows="3" placeholder="Thanks for your business." />
             </UFormField>
             <UFormField label="Terms &amp; Conditions">
-              <UUTextArea v-model="invoice.termsAndConditions" :rows="3"
+              <UUTextArea
+v-model="invoice.termsAndConditions" :rows="3"
                 placeholder="Enter the terms and conditions." />
             </UFormField>
 
@@ -235,7 +236,7 @@
 </template>
 
 <script setup>
-  definePageMeta({ layout: "blank" })
+  definePageMeta({ layout: "default" })
 
   const showSummary = ref(true)
   // Tax dropdown options
@@ -365,7 +366,7 @@
       if (newTax !== null) {
         const parsed = parseInt(newTax);
         if (!isNaN(parsed) && parsed >= 0 && parsed <= 99) {
-          currencyOptions.splice(currencyOptions.length - 1, 0, {
+          currencyOptions.value.splice(currencyOptions.value.length - 1, 0, {
             label: `${parsed}%`,
             value: parsed
           });

@@ -6,6 +6,18 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxt/eslint'
   ],
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'icon',
+          href: '/favicon.svg', // Point to the favicon file in the static folder
+        },
+      ],
+      script: []
+    }
+
+  },
 
   css: ['~/assets/css/main.css'],
   ui: {

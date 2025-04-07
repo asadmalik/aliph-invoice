@@ -29,7 +29,7 @@
         <div class="mx-auto flex h-14 max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <!-- Brand -->
             <NuxtLink to="/" class="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-200">
-                <img src="/img/logo.svg" alt="Aliph Invoice" class="w-[120px]">
+                <img src="/img/logo.svg" alt="Aliph Invoice" class="w-[130px]">
             </NuxtLink>
 
             <!-- Drawer trigger + content -->

@@ -13,13 +13,9 @@ export type UnitType = 'Fixed' | 'Hourly'
 
 export interface IItem {
     id?: number
-    invoiceId?: number
     name: string
     unitType: UnitType
-    quantity: number
     rate: number
-    tax: number
-    taxName?: string
 }
 
 export interface ITaxItem {

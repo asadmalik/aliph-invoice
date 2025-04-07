@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto p-6">
+  <UContainer as="div" class="flex flex-col gap-6">
     <!-- Header & CTA -->
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-semibold">Customers</h1>
@@ -9,9 +9,9 @@
     </div>
 
     <!-- Customers Table -->
-    <UTable :data="customers" :columns="columns" :loading="loading" empty-state="No customers yet." class="flex-1"
-      :ui="{ tr: 'odd:bg-gray-50 dark:odd:bg-gray-800' }" />
-  </div>
+    <UTable :data="customers" :columns="columns" :loading="loading" empty-state="No customers yet."
+      class="flex-1 w-full" :ui="{ tr: 'odd:bg-gray-50 dark:odd:bg-gray-800' }" />
+  </UContainer>
 </template>
 
 <script setup lang="ts">

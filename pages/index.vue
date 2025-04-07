@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     <UCard v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' } }"
       class="hover:shadow-lg transition">
       <template #header>

@@ -1,38 +1,42 @@
 <!-- eslint-disable vue/first-attribute-linebreak -->
 <template>
-  <div class="max-w-2xl mx-auto p-6">
-    <h1 class="text-2xl font-semibold mb-6">Create New Customer</h1>
+  <UContainer as="div" class="w-full flex flex-row gap-6">
+    <div class=" flex flex-col flex-1 justify-between align-middle">
+      <h1 class="text-2xl font-semibold mb-6">Create New Customer</h1>
 
-    <UForm :state="form" @submit="handleSubmit">
-      <div class="grid gap-4">
-        <UInput v-model="form.name" label="Name" placeholder="John Doe" required />
-        <UInput v-model="form.phone" label="Phone" placeholder="+1 555‑555‑5555" />
-        <UInput v-model="form.email" label="Email" placeholder="john@example.com" type="email" />
-        <UTextarea v-model="form.address" label="Address" placeholder="123 Main St, City, Country" />
-        <UInput v-model="form.companyName" label="Company Name" placeholder="Acme Inc." />
+      <UForm :state="form" @submit="handleSubmit">
+        <div class="grid gap-4">
+          <UInput v-model="form.name" label="Name" placeholder="John Doe" required />
+          <UInput v-model="form.phone" label="Phone" placeholder="+1 555‑555‑5555" />
+          <UInput v-model="form.email" label="Email" placeholder="john@example.com" type="email" />
+          <UTextarea v-model="form.address" label="Address" placeholder="123 Main St, City, Country" />
+          <UInput v-model="form.companyName" label="Company Name" placeholder="Acme Inc." />
 
-        <!-- Image picker -->
-        <div>
-          <label class="block text-sm font-medium mb-1">Image</label>
-          <input type="file" accept="image/*"
-            class="file-input block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary-600 file:text-white hover:file:bg-primary-700;"
-            @change="onFileChange">
-          <img v-if="form.image" :src="form.image" alt="Preview" class="mt-2 h-24 w-24 object-cover rounded">
+          <!-- Image picker -->
+          <div>
+            <label class="block text-sm font-medium mb-1">Image</label>
+            <input type="file" accept="image/*"
+              class="file-input block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary-600 file:text-white hover:file:bg-primary-700;"
+              @change="onFileChange">
+            <img v-if="form.image" :src="form.image" alt="Preview" class="mt-2 h-24 w-24 object-cover rounded">
+          </div>
+
+          <!-- Currency select -->
+          <!-- Currency select -->
+          <USelect v-model="form.currency" :items="currencies" option-attribute="label" value-attribute="value"
+            label="Currency" placeholder="Select currency" />
+
+          <UButton type="submit" class="mt-4">Save Customer</UButton>
         </div>
+      </UForm>
 
-        <!-- Currency select -->
-        <!-- Currency select -->
-        <USelect v-model="form.currency" :items="currencies" option-attribute="label" value-attribute="value"
-          label="Currency" placeholder="Select currency" />
+      <UAlert v-if="saved" color="primary" variant="subtle" class="mt-4">
+        Customer saved successfully!
+      </UAlert>
 
-        <UButton type="submit" class="mt-4">Save Customer</UButton>
-      </div>
-    </UForm>
+    </div>
+  </UContainer>
 
-    <UAlert v-if="saved" color="primary" variant="subtle" class="mt-4">
-      Customer saved successfully!
-    </UAlert>
-  </div>
 </template>
 
 <script setup lang="ts">

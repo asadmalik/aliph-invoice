@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-2xl mx-auto p-6">
+  <UContainer as="div" class="flex flex-col gap-6">
     <h1 class="text-2xl font-semibold mb-6">Edit Customer</h1>
 
     <UForm :state="form" @submit="handleSubmit">
@@ -30,7 +30,7 @@
     <UAlert v-if="saved" color="primary" variant="subtle" class="mt-4">
       Customer updated successfully!
     </UAlert>
-  </div>
+  </UContainer>
 </template>
 
 <script setup lang="ts">

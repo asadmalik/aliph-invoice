@@ -1,21 +1,19 @@
 <template>
   <div>
-    <UContainer as="div" class="max-w-5xl p-7 flex flex-col gap-6">
-      <div class="w-full flex flex-row justify-between align-middle">
-        <UFormField label="Customer Name" label-placement="bottom">
-          <CustomerSelect v-model="selectedCustomer" />
-        </UFormField>
-        <UFormField label="Invoice #" size="lg">
-          <UInput v-model="invoice.invoiceNumber" class="w-96" />
-        </UFormField>
-        <!-- <UICustomerSelect></UICustomerSelect> -->
-        <!-- <UFormField label="Customer Name" labelPlacement="bottom">
+    <UContainer as="div" class="flex flex-col gap-6">
+
+      <UFormField label="Customer Name" label-placement="bottom">
+        <CustomerSelect v-model="selectedCustomer" />
+      </UFormField>
+      <UFormField label="Invoice #" size="lg">
+        <UInput v-model="invoice.invoiceNumber" class="w-96" />
+      </UFormField>
+      <!-- <UICustomerSelect></UICustomerSelect> -->
+      <!-- <UFormField label="Customer Name" labelPlacement="bottom">
           <USelect :items="customers" value-key="email" label-key="name" placeholder="Select Customer" v-model="selectedCustomer"></USelect>
         </UFormField>
         <UBadge>{{ selectedCustomer }}</UBadge> -->
-      </div>
 
-      <div class="w-full flex flex-row items-stretch" />
 
       <div class="w-full flex flex-row items-stretch justify-between gap-7">
         <UFormField label="Invoice Date" label-placement="top" size="lg">

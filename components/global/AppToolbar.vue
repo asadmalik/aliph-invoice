@@ -33,17 +33,19 @@
             </NuxtLink>
 
             <!-- Drawer trigger + content -->
-            <UDrawer v-model="open" side="left">
+            <UDrawer v-model="open" side="right" should-scale-background set-background-color-on-scale direction="right"
+                dismissible class="md:w-3/4">
                 <!-- trigger button -->
                 <UButton icon="i-lucide-menu" color="gray" variant="ghost" aria-label="Open menu" />
 
                 <!-- drawer content -->
                 <template #content>
-                    <UNavigationMenu :items="items" orientation="vertical" class="p-4 space-y-2" :ui="{
-                        icon: { size: 'size-6' },
-                        item: { base: 'flex gap-3 items-center text-base' },
-                        active: 'text-primary'
-                    }" />
+                    <UNavigationMenu :items="items" orientation="vertical" class="p-4 space-y-2 w-[calc(100vw-12rem)]"
+                        :ui="{
+                            icon: { size: 'size-6' },
+                            item: { base: 'flex gap-3 items-center text-base' },
+                            active: 'text-primary'
+                        }" />
                 </template>
             </UDrawer>
         </div>

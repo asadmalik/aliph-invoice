@@ -3,8 +3,11 @@
     <UContainer as="div" class="flex flex-col gap-6">
 
       <UFormField label="Customer Name" label-placement="bottom">
-        <CustomerSelect v-model="selectedCustomer" />
+        <CustomerSelect v-model="selectedCustomerId" @select="onCustomerSelect" />
       </UFormField>
+
+
+
       <UFormField label="Invoice #" size="lg">
         <UInput v-model="invoice.invoiceNumber" class="w-96" />
       </UFormField>
@@ -102,11 +105,27 @@
 
 
   import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
+  import type { ICustomer } from '~/DataLayer/types';
 import CustomerSelect from '~~/components/ui/CustomerSelect.vue';
-  /*   const customers = ref([
-      { name: 'John Smith', email: 'John@Smith.com', currency: 'GBP', address: '123 Park Road, Awesomeville, Uganda' }
-    ]) */
-  const selectedCustomer = ref()
+
+
+
+  // Holds the chosen customer ID (for form submission, etc.)
+  const selectedCustomerId = ref<number | null>(null)
+
+  // Holds the full customer object once selected
+  const selectedCustomer = ref<ICustomer | null>(null)
+
+  // When CustomerSelect emits the full object, capture it here:
+  function onCustomerSelect(cust: ICustomer) {
+    selectedCustomer.value = cust
+    // You can also sync `selectedCustomerId` if needed:
+    selectedCustomerId.value = cust.id ?? null
+  }
+
+
+
+
   // Reactive invoice data
   const invoice = reactive({
     customerName: "",

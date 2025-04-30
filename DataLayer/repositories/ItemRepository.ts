@@ -8,9 +8,10 @@ export class ItemRepository extends BaseRepository<IItem> {
         super(db.items)
     }
 
+
     /** Fetch items that belong to an invoice */
     async getByInvoice(invoiceId: number): Promise<IItem[]> {
-        return this.table.where('invoiceId').equals(invoiceId).toArray()
+        return this.table.where('id').equals(invoiceId).toArray()
     }
 }
 

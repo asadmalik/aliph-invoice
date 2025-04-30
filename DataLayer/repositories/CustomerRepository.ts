@@ -12,6 +12,8 @@ export class CustomerRepository extends BaseRepository<ICustomer> {
     async findByName(name: string): Promise<ICustomer[]> {
         return this.table.where('name').equalsIgnoreCase(name).toArray()
     }
+
+    /** TODO: generate new functions getAll and get(id) */
 }
 
 export const customerRepo = new CustomerRepository()

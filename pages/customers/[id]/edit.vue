@@ -20,7 +20,7 @@
         </div>
 
         <!-- Currency select -->
-        <USelect v-model="form.currency" :options="currencies" option-attribute="label" value-attribute="value"
+        <USelect v-model="form.currency" :items="currencies" option-attribute="label" value-attribute="value"
           label="Currency" placeholder="Select currency" />
 
         <UButton type="submit" class="mt-4">Update Customer</UButton>
@@ -35,7 +35,8 @@
 
 <script setup lang="ts">
 
-  import { customerRepo } from '@/DataLayer/repositories/CustomerRepository'
+  //import { customerRepo } from '@/DataLayer/repositories/CustomerRepository'
+  import { useCustomerRepo } from '@/composables/useRepos'
   import type { ICustomer } from '@/DataLayer/types'
 
 
@@ -46,6 +47,8 @@
   const route = useRoute()
   const router = useRouter()
   const id = Number(route.params.id)
+
+  const customerRepo = useCustomerRepo();
 
   const form = reactive<EditableCustomer>({
     name: '',

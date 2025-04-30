@@ -7,6 +7,7 @@ export interface ICustomer {
     address?: string
     companyName?: string
     currency?: string
+    image?: string
 }
 
 export type UnitType = 'Fixed' | 'Hourly'

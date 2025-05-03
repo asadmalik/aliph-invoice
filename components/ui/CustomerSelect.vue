@@ -1,10 +1,12 @@
 <template>
   <div>
-    <USelect v-model="selectedIdLocal" :items="selectItems" placeholder="Select customer..." filterable clearable
+    <USelect
+v-model="selectedIdLocal" :items="selectItems" placeholder="Select customer..." filterable clearable
       value-key="value" class="w-full" :avatar="avatar" />
 
     <UCollapsible v-if="selectedCustomer" title="Customer Details" class="mt-2">
-      <UButton class="group" label="Show Details" color="secondary" variant="link" trailing-icon="i-lucide-chevron-down"
+      <UButton
+class="group" label="Show Details" color="secondary" variant="link" trailing-icon="i-lucide-chevron-down"
         :ui="{
           trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200'
         }" />
@@ -48,8 +50,8 @@
 
 <script setup lang="ts">
   import type { ICustomer } from '@/DataLayer/types';
-  import type { AvatarProps, SelectItem } from '@nuxt/ui';
-  import { useCustomerRepo } from '~/composables/useRepos';
+import type { AvatarProps, SelectItem } from '@nuxt/ui';
+import { useCustomerRepo } from '~/composables/useRepos';
 
   const props = defineProps<{ modelValue: number | null }>()
   const emit = defineEmits<{
@@ -72,7 +74,7 @@
   })
 
   const avatar = computed<AvatarProps>(() => {
-    return selectItems.value.find(item => item.value === selectedIdLocal.value)?.avatar || {}
+    return selectItems.value.find(item => item.value === selectedIdLocal.value)?.avatar || ''
   })
 
   const selectedCustomer = computed<ICustomer | null>(() => {

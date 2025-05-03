@@ -1,4 +1,6 @@
 /* File: DataLayer/types.ts */
+/* File: DataLayer/types.ts */
+
 export interface ICustomer {
     id?: number
     name: string
@@ -25,6 +27,20 @@ export interface ITaxItem {
     rate: number
 }
 
+/* DataLayer/types.ts */
+export interface IInvoiceItem {
+    id?: number
+    invoiceId?: number   // FK after save
+    item: string
+    qty: number
+    rate: number
+    tax: number
+    amount: number
+}
+
+export type InvoiceHeader = Omit<IInvoice, 'items'>
+
+
 export interface IInvoice {
     id?: number
     customerId: number
@@ -34,7 +50,8 @@ export interface IInvoice {
     dueDate: string
     billTo: string
     currencyCode: string
-    items: IItem[]
+    /** now an array of your new line-item type */
+    items: IInvoiceItem[]
     notes?: string
     termsAndConditions?: string
     discount?: number

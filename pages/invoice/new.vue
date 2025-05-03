@@ -1,302 +1,162 @@
 <template>
-  <div>
-    <UContainer as="div" class="flex flex-col gap-6">
+  <UContainer class="flex flex-col gap-6">
 
-      <UFormField label="Customer Name" label-placement="bottom">
-        <CustomerSelect v-model="selectedCustomerId" @select="onCustomerSelect" />
+    <!-- Customer / Meta -->
+    <UFormField label="Customer Name" label-placement="bottom">
+      <CustomerSelect v-model="selectedCustomerId" @select="setCustomer" />
+    </UFormField>
+
+    <UFormField label="Invoice #" size="lg">
+      <UInput v-model="invoice.invoiceNumber" class="w-96" />
+    </UFormField>
+
+    <div class="flex flex-wrap gap-7">
+      <UFormField label="Invoice Date">
+        <UInput v-model="invoice.invoiceDate" type="date" class="w-72" />
       </UFormField>
-
-
-
-      <UFormField label="Invoice #" size="lg">
-        <UInput v-model="invoice.invoiceNumber" class="w-96" />
+      <UFormField label="Terms">
+        <USelect v-model="invoice.terms" :items="termsOptions" class="w-72" />
       </UFormField>
-      <!-- <UICustomerSelect></UICustomerSelect> -->
-      <!-- <UFormField label="Customer Name" labelPlacement="bottom">
-          <USelect :items="customers" value-key="email" label-key="name" placeholder="Select Customer" v-model="selectedCustomer"></USelect>
-        </UFormField>
-        <UBadge>{{ selectedCustomer }}</UBadge> -->
+      <UFormField label="Due Date">
+        <UInput v-model="invoice.dueDate" type="date" class="w-72" />
+      </UFormField>
+    </div>
 
+    <!-- Items Table -->
+    <UCard>
+      <template #header>
+        <UText tag="h2" class="text-lg font-semibold">Item Details</UText>
+      </template>
 
-      <div class="w-full flex flex-row items-stretch justify-between gap-7">
-        <UFormField label="Invoice Date" label-placement="top" size="lg">
-          <UInput v-model="invoice.invoiceDate" type="date" class="w-72" />
-        </UFormField>
-        <UFormField label="Terms" label-placement="top" size="lg">
-          <USelect v-model="invoice.terms" :items="termsOptions" class="w-72" />
-        </UFormField>
-        <UFormField label="Due Date" label-placement="top" size="lg">
-          <UInput v-model="invoice.dueDate" type="date" class="w-72" />
-        </UFormField>
+      <InvoiceItemsTable
+:items-table="invoice.items" @item-added="syncItems" @item-removed="syncItems"
+        @item-updated="syncItems" />
+    </UCard>
 
+    <!-- Totals -->
+    <div class="self-end w-80 mt-6 space-y-1 text-sm">
+      <div class="flex justify-between"><span>Sub‑Total:</span><span>{{ fmt(subTotal) }}</span></div>
+      <div class="flex justify-between"><span>Tax Deducted:</span><span>{{ fmt(totalTax) }}</span></div>
+      <div class="border-t pt-1 flex justify-between font-semibold text-lg">
+        <span>Grand Total:</span><span>{{ fmt(grandTotal) }}</span>
       </div>
+    </div>
 
-      <div class="w-full flex flex-row items-stretch justify-between gap-7">
-        <!-- Item Table -->
-        <UCard :data-allow-mismatch="true">
-          <template #header>
-            <div class="flex justify-between items-center">
-              <UText tag="h2" class="text-lg font-semibold">Item Details</UText>
-              <!--           <UButton v-if="!printMode" size="small" type="default" @click="onScanItem" class="hidden">
-            Scan Item
-          </UButton> -->
-            </div>
-          </template>
-          <template #default>
-            <!--  <table class="w-full border-collapse border-gray-300 text-sm">
-          <colgroup>
-            <col style="width: 50%;" />
-            <col style="width: 8%;" />
-            <col style="width: 8%;" />
-            <col style="width: 12%;" />
-            <col />
-            <col v-if="!printMode" style="width: 2%;" />
-          </colgroup>
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="border p-2 text-left">Item</th>
-              <th class="border p-2 text-left">Quantity</th>
-              <th class="border p-2 text-left">Rate</th>
-              <th class="border p-2 text-left">Tax</th>
-              <th class="border p-2 text-right">Amount</th>
-              <th v-if="!printMode" class="border p-2 text-center w-10"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, index) in invoice.items" :key="index">
-              <td class="border p-2">
-                <UInput v-model="row.item" placeholder="Type or select an item" />
-              </td>
-              <td class="border p-2">
-                <UInput v-model.number="row.quantity" type="number" min="0" />
-              </td>
-              <td class="border p-2">
-                <UInput v-model.number="row.rate" type="number" min="0" />
-              </td>
-              <td class="border p-2">
-                <USelect v-model="row.tax" :items="taxOptions" @update:modelValue="handleTaxChange(row)" />
-              </td>
-              <td class="border p-2 text-right">
-                {{ formatCurrency(rowAmount(row)) }}
-              </td>
-              <td v-if="!printMode" class="border p-2 text-center">
-                <UButton size="small" type="error" @click="removeRow(index)">X</UButton>
-              </td>
-            </tr>
-          </tbody>
-        </table> -->
+    <!-- Save -->
+    <div class="mt-8 self-end">
+      <UButton color="primary" @click="saveInvoice">Save Invoice</UButton>
+    </div>
 
-
-            <InvoiceItemsTable :items="invoice.items" :tax-options="taxOptions" mode="edit"
-              @update:items="invoice.items = $event" />
-
-
-
-          </template>
-        </UCard>
-      </div>
-
-    </UContainer>
-
-  </div>
+  </UContainer>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+  /* --------------------------------------------------------------- *
+   * imports & helpers                                               *
+   * --------------------------------------------------------------- */
+  import type { ICustomer, IInvoice, IInvoiceItem } from '@/DataLayer/types'
+import { useInvoiceRepo } from '@/composables/useRepos'
+import CustomerSelect from '~/components/ui/CustomerSelect.vue'
+import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue'
 
+  const isClient = import.meta.client
+  const repo = isClient ? useInvoiceRepo() : null                 // undefined on SSR
+  const fmt = (n: number) => `$${n.toFixed(2)}`                  // currency helper
 
-  import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
-  import type { ICustomer } from '~/DataLayer/types';
-import CustomerSelect from '~~/components/ui/CustomerSelect.vue';
-
-
-
-  // Holds the chosen customer ID (for form submission, etc.)
-  const selectedCustomerId = ref<number | null>(null)
-
-  // Holds the full customer object once selected
-  const selectedCustomer = ref<ICustomer | null>(null)
-
-  // When CustomerSelect emits the full object, capture it here:
-  function onCustomerSelect(cust: ICustomer) {
-    selectedCustomer.value = cust
-    // You can also sync `selectedCustomerId` if needed:
-    selectedCustomerId.value = cust.id ?? null
+  /* --------------------------------------------------------------- *
+   * invoice reactive object                                         *
+   * --------------------------------------------------------------- */
+  function blankItem(): IInvoiceItem {
+    return { id: Date.now(), item: '', qty: 1, rate: 0, tax: 0, amount: 0 }
   }
 
-
-
-
-  // Reactive invoice data
-  const invoice = reactive({
-    customerName: "",
-    invoiceNumber: "INV-0001",
-    invoiceDate: new Date().toISOString().split("T")[0],
-    terms: "Due On Receipt",
-    dueDate: "",
-    billTo: "141 Hacienda Drive,\nPleasanton,\n94588 CA.",
-    currencyCode: "USD",
-    items: [
-      { item: "", quantity: 0, rate: 0, tax: 0 },
-      { item: "", quantity: 0, rate: 0, tax: 0 },
-    ],
-    notes: "Thanks for your business.",
-    termsAndConditions: "",
+  const invoice = reactive<IInvoice>({
+    customerId: null,
+    customerName: '',
+    invoiceNumber: '',
+    invoiceDate: new Date().toISOString().split('T')[0],
+    terms: 'Due On Receipt',
+    dueDate: '',
+    billTo: '',
+    currencyCode: 'USD',
+    items: [blankItem()],
+    notes: '',
     discount: 0,
     shipping: 0
-  });
+  })
 
-  // Terms options
-  const termsOptions = ref([
-    { label: "Due On Receipt", value: "Due On Receipt" },
-    { label: "Net 15", value: "Net 15" },
-    { label: "Net 30", value: "Net 30" }
-  ]);
-  // Currency options with symbols
-  const currencyOptions = ref([
-    { code: "USD", symbol: "$", label: "USD ($)" },
-    { code: "GBP", symbol: "£", label: "GBP (£)" },
-    { code: "CNY", symbol: "¥", label: "Chinese Yuan (¥)" },
-    { code: "PKR", symbol: "₨", label: "PKR (₨)" },
-    { code: "INR", symbol: "₹", label: "INR (₹)" },
-    { code: "SAR", symbol: "﷼", label: "Saudi Riyal (﷼)" },
-    { code: "AED", symbol: "د.إ", label: "UAE Dirham (د.إ)" },
-    { code: "EUR", symbol: "€", label: "Euro (€)" }
-  ]);
+  /* --------------------------------------------------------------- *
+   * live totals (computed from qty / rate / tax every render)       *
+   * --------------------------------------------------------------- */
+  const subTotal = computed(() =>
+    invoice.items.reduce((s, r) => s + (r.qty * r.rate - r.tax), 0)
+  )
+  const totalTax = computed(() => invoice.items.reduce((s, r) => s + r.tax, 0))
+  const grandTotal = computed(() => subTotal.value + totalTax.value)
 
-  const taxOptions = ref([
-    { label: 'No Tax (0%)', value: 0 },
-    { label: '5%', value: 5 },
-    { label: '10%', value: 10 },
-    { label: 'New Tax', value: 'new' }
-  ]);
+  /* --------------------------------------------------------------- *
+   * reset form (client‑only)                                        *
+   * --------------------------------------------------------------- */
+  async function resetInvoice() {
+    if (!repo) return
+    const nextNum = await repo.getNextNumber()
 
-  const showSummary = ref(true)
-  // Computed currency symbol based on selected currencyCode
-  const currencySymbol = computed(() => {
-    const option = currencyOptions.value.find((opt) => opt.code === invoice.currencyCode);
-    return option ? option.symbol : "$";
-  });
-
-  // Helper function to format currency values using the selected symbol
-  function formatCurrency(value) {
-    return currencySymbol.value + Number(value).toFixed(2);
+    Object.assign(invoice, {
+      customerId: null,
+      customerName: '',
+      invoiceNumber: nextNum,
+      invoiceDate: new Date().toISOString().split('T')[0],
+      terms: 'Due On Receipt',
+      dueDate: '',
+      billTo: '',
+      items: [blankItem()],
+      notes: '',
+      discount: 0,
+      shipping: 0
+    })
   }
 
-  /**
-   * rowAmount: quantity * rate
-   */
-  function rowAmount(row) {
-    return (Number(row.quantity) || 0) * (Number(row.rate) || 0);
+  onMounted(resetInvoice)
+
+  /* --------------------------------------------------------------- *
+   * customer picker                                                 *
+   * --------------------------------------------------------------- */
+  const selectedCustomerId = ref<number | null>(null)
+  function setCustomer(c: ICustomer) {
+    selectedCustomerId.value = c.id!
+    invoice.customerId = c.id!
+    invoice.customerName = c.name
   }
 
-  /**
-   * subTotal: sum of row amounts
-   */
-  const subTotal = computed(() => {
-    return invoice.items.reduce((acc, row) => acc + rowAmount(row), 0);
-  });
+  /* --------------------------------------------------------------- *
+   * term options                                                    *
+   * --------------------------------------------------------------- */
+  const termsOptions = [
+    { label: 'Due On Receipt', value: 'Due On Receipt' },
+    { label: 'Net 15', value: 'Net 15' },
+    { label: 'Net 30', value: 'Net 30' }
+  ]
 
-  /**
-   * discountValue: direct currency discount
-   */
-  const discountValue = computed(() => {
-    return Number(invoice.discount) || 0;
-  });
+  /* --------------------------------------------------------------- *
+   * items sync from child table                                     *
+   * --------------------------------------------------------------- */
+  function syncItems(rows: IInvoiceItem[]) {
+    invoice.items = rows
+  }
 
-  /**
-   * groupedTaxes: group tax amounts by tax rate
-   */
-  const groupedTaxes = computed(() => {
-    const taxMap = {};
-    invoice.items.forEach((row) => {
-      const taxRate = typeof row.tax === "number" ? row.tax : 0;
-      if (!taxMap[taxRate]) {
-        taxMap[taxRate] = 0;
-      }
-      taxMap[taxRate] += rowAmount(row) * (taxRate / 100);
-    });
-    return Object.entries(taxMap).map(([rate, amount]) => {
-      return {
-        label: `Tax (${Number(rate)}%)`,
-        amount
-      };
-    });
-  });
-
-  /**
-   * totalTax: sum of all grouped tax amounts
-   */
-  const totalTax = computed(() => {
-    return groupedTaxes.value.reduce((sum, t) => sum + t.amount, 0);
-  });
-
-  /**
-   * grandTotal = subTotal - discount + shipping + totalTax
-   */
-  const grandTotal = computed(() => {
-    return subTotal.value - discountValue.value + Number(invoice.shipping) + totalTax.value;
-  });
-
-  /**
-   * handleTaxChange: if user picks "New Tax", prompt for custom rate
-   */
-  function handleTaxChange(row) {
-    if (row.tax === "new") {
-      const newTax = prompt("Enter new tax rate (0-99):");
-      if (newTax !== null) {
-        const parsed = parseInt(newTax);
-        if (!isNaN(parsed) && parsed >= 0 && parsed <= 99) {
-          currencyOptions.value.splice(currencyOptions.value.length - 1, 0, {
-            label: `${parsed}%`,
-            value: parsed
-          });
-          row.tax = parsed;
-        } else {
-          alert("Invalid tax rate.");
-          row.tax = 0;
-        }
-      } else {
-        row.tax = 0;
-      }
+  /* --------------------------------------------------------------- *
+   * save                                                            *
+   * --------------------------------------------------------------- */
+  async function saveInvoice() {
+    if (!repo) return
+    try {
+      const id = await repo.addWithItems(toRaw(invoice))
+      console.log(`Invoice #${id} saved!`)
+      await resetInvoice()
+    } catch (err) {
+      console.error(err)
+      alert('Save failed.')
     }
   }
-
-  // Row management
-  function addNewRow() {
-    invoice.items.push({ item: "", quantity: 0, rate: 0, tax: 0 });
-  }
-
-  function removeRow(index) {
-    invoice.items.splice(index, 1);
-  }
-
-  function addItemsInBulk() {
-    alert("Add items in bulk triggered.");
-  }
-
-  function onScanItem() {
-    alert("Scan item triggered.");
-  }
-
-  function addPaymentGateway() {
-    alert("Add Payment Gateway triggered.");
-  }
-
-  // Save methods
-  function saveAsDraft() {
-    console.log("Invoice saved as draft:", invoice);
-    alert("Invoice saved as draft.");
-  }
-
-  function saveAndSend() {
-    console.log("Invoice saved and sent:", invoice);
-    alert("Invoice saved and sent.");
-  }
-
-  function cancel() {
-    alert("Canceled.");
-  }
-
-  // For demonstration, set printMode to false (implement as needed)
-  const printMode = false;
 </script>
+

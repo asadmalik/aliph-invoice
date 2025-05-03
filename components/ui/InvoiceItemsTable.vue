@@ -1,181 +1,151 @@
 <template>
-    <UTable :data="localItems" :columns="columns" class="mb-4" />
-  </template>
-  
-  <script setup lang="ts">
-  import { UButton, UInput, USelect } from '#components'
-import type { TableColumn } from '@nuxt/ui'
-import { computed, h, ref, watch } from 'vue'
-  
-  interface InvoiceItem {
-    item: string
-    quantity: number
-    rate: number
-    tax: number | string
+  <div>
+    <!-- Invoice Items Table built with Nuxt UI components -->
+    <table class="min-w-full table-auto border-collapse">
+      <thead>
+        <tr>
+          <th class="border px-2">Sr.</th>
+          <th class="border px-2 text-left">Item</th>
+          <th class="border px-2">Qty</th>
+          <th class="border px-2">Rate</th>
+          <th class="border px-2">Tax</th>
+          <th class="border px-2">Amount</th>
+          <th class="border px-2">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(row, idx) in rows" :key="row.id || idx">
+          <td class="border px-2">{{ idx + 1 }}</td>
+
+          <td class="border px-2">
+            <UInputMenu
+              v-model="row.item"
+              :items="itemNames"
+              placeholder="Select or enter item"
+              class="w-full"
+              @update:model-value="val => onItemSelect(val, row)"
+            />
+          </td>
+
+          <td class="border px-2">
+            <UInput v-model.number="row.qty" type="number" class="w-16 text-right"  @update:model-value="() => touchRow(row)"/>
+          </td>
+
+          <td class="border px-2">
+            <UInput v-model.number="row.rate" type="number" class="w-20 text-right"  @update:model-value="() => touchRow(row)"/>
+          </td>
+
+          <td class="border px-2">
+            <USelect
+              v-model.number="row.tax"
+              :items="taxSelectItems"
+              class="w-24"
+               @update:model-value="() => touchRow(row)"
+            />
+          </td>
+
+          <td class="border px-2 text-right">
+            {{ row.amount.toFixed(2) }}
+          </td>
+
+          <td class="border px-2">
+            <UButton color="warning" variant="soft" size="sm" @click="removeRow(idx)">Remove</UButton>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mt-4">
+      <UButton color="primary" @click="addRow">Add Row</UButton>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+/* types */
+import type { IInvoiceItem, IItem, ITaxItem } from '@/DataLayer/types';
+import { onMounted, ref, toRaw, watch } from 'vue';
+
+/* ─────────────────────────────────────────────────────────────── */
+/* props / emits                                                   */
+/* ─────────────────────────────────────────────────────────────── */
+const props = defineProps<{
+  itemsTable: IInvoiceItem[]
+}>()
+
+const emit = defineEmits<{
+  (e: 'loaded'): void
+  (e: 'item-added'   , rows: IInvoiceItem[]): void
+  (e: 'item-removed' , rows: IInvoiceItem[]): void
+  (e: 'item-updated' , rows: IInvoiceItem[]): void
+}>()
+
+/* ─────────────────────────────────────────────────────────────── */
+/* local state                                                     */
+/* ─────────────────────────────────────────────────────────────── */
+const rows         = ref<IInvoiceItem[]>([])
+const itemsOptions = ref<IItem[]>([])
+const taxItems     = ref<ITaxItem[]>([])
+
+/* helper → clone plain rows for emit (no Vue proxies) */
+function plainRows (): IInvoiceItem[] {
+  return rows.value.map(r => ({ ...toRaw(r) }))
+}
+
+/* recalc one row & emit update */
+function touchRow (row: IInvoiceItem) {
+  row.amount = row.qty * row.rate - row.tax
+  emit('item-updated', plainRows())
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/* init                                                            */
+/* ─────────────────────────────────────────────────────────────── */
+onMounted(async () => {
+  rows.value = props.itemsTable.length
+    ? props.itemsTable.map(r => ({ ...r }))
+    : []
+
+  const [itemList, taxList] = await Promise.all([
+    useItemRepo().getAll(),
+    useTaxItemRepo().getAll()
+  ])
+  itemsOptions.value = itemList
+  taxItems.value     = taxList
+
+  emit('loaded')
+})
+
+/* refresh if parent replaces the array (reset form)  */
+watch(() => props.itemsTable, (arr) => {
+  rows.value = arr.map(r => ({ ...r }))
+})
+
+/* ─────────────────────────────────────────────────────────────── */
+/* field handlers                                                  */
+/* ─────────────────────────────────────────────────────────────── */
+function onItemSelect (val: string, row: IInvoiceItem) {
+  const match = itemsOptions.value.find(i => i.name === val)
+  if (match) {
+    row.item = match.name
+    row.rate = match.rate        // auto‑fill rate
+  } else {
+    row.item = val
   }
-  
-  // Props: invoice items, tax options, and a mode ("edit" | "view")
-  const props = defineProps<{
-    items: InvoiceItem[]
-    taxOptions: Array<{ label: string; value: number | string }>
-    mode?: 'edit' | 'view'
-  }>()
-  
-  // Emit event to update items in parent
-  const emit = defineEmits<{
-    (e: 'update:items', items: InvoiceItem[]): void
-  }>()
-  
-  // Default mode is "edit" if not specified
-  const mode = computed(() => props.mode ?? 'edit')
-  
-  // Create a local reactive copy of items so we can track changes
-  const localItems = ref<InvoiceItem[]>([...props.items])
-  watch(
-    localItems,
-    (newItems) => {
-      emit('update:items', newItems)
-    },
-    { deep: true }
-  )
-  
-  // Helper: calculate row amount (quantity * rate)
-  function rowAmount(item: InvoiceItem): number {
-    return (Number(item.quantity) || 0) * (Number(item.rate) || 0)
-  }
-  
-  // Helper: format a currency value (adjust as needed)
-  function formatCurrency(value: number): string {
-    // For production you might want to use Intl.NumberFormat
-    return '$' + Number(value).toFixed(2)
-  }
-  
-  // Helper: in view mode, get tax option label
-  function getTaxLabel(value: number | string): string {
-    const option = props.taxOptions.find((opt) => opt.value === value)
-    return option ? option.label : String(value)
-  }
-  
-  // Columns definition for UTable
-  const columns: TableColumn<InvoiceItem>[] = [
-    {
-      accessorKey: 'item',
-      header: 'Item',
-      cell: ({ row }) => {
-        if (mode.value === 'edit') {
-          return h(UInput, { class: 'w-80' }, {
-            modelValue: row.original.item,
-            'onUpdate:modelValue': (val: string) => (row.original.item = val),
-            placeholder: 'Type or select an item'
-          })
-        } else {
-          return h('span', row.original.item || '')
-        }
-      }
-    },
-    {
-      accessorKey: 'quantity',
-      maxSize: 120,
-      header: 'Quantity',
-      cell: ({ row }) => {
-        if (mode.value === 'edit') {
-          return h(UInput, { class: 'w-20' }, {
-            type: 'number',
-            modelValue: row.original.quantity,
-            'onUpdate:modelValue': (val: number) => (row.original.quantity = val),
-            min: 0
-          })
-        } else {
-          return h('span', String(row.original.quantity))
-        }
-      }
-    },
-    {
-      accessorKey: 'rate',
-      maxSize: 80,
-      size: 80,
-      header: 'Rate',
-      cell: ({ row }) => {
-        if (mode.value === 'edit') {
-          return h(UInput, { class: 'w-20' }, {
-            type: 'number',
-            modelValue: row.original.rate,
-            'onUpdate:modelValue': (val: number) => (row.original.rate = val),
-            min: 0
-          })
-        } else {
-          return h('span', String(row.original.rate))
-        }
-      }
-    },
-    {
-      accessorKey: 'tax',
-      header: 'Tax',
-      cell: ({ row }) => {
-        if (mode.value === 'edit') {
-          return h(USelect, {
-            modelValue: row.original.tax,
-            'onUpdate:modelValue': (val: number | string) => {
-              row.original.tax = val
-              handleTaxChange(row.original)
-            },
-            items: props.taxOptions
-          })
-        } else {
-          return h('span', getTaxLabel(row.original.tax))
-        }
-      }
-    },
-    {
-      accessorKey: 'amount',
-      header: () => h('div', { class: 'text-right' }, 'Amount'),
-      cell: ({ row }) => {
-        return h('div', { class: 'text-right font-medium' }, formatCurrency(rowAmount(row.original)))
-      }
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row, index }) => {
-        if (mode.value === 'edit') {
-          return h(
-            'div',
-            { class: 'text-right' },
-            h(UButton, {
-              type: 'error',
-              size: 'small',
-              onClick: () => removeRow(index)
-            }, 'X')
-          )
-        } else {
-          return h('div') // no actions in view mode
-        }
-      }
-    }
-  ]
-  
-  // Handle tax change: if "New Tax" is selected, prompt for a custom rate
-  function handleTaxChange(item: InvoiceItem) {
-    if (item.tax === 'new') {
-      const newTax = prompt("Enter new tax rate (0-99):")
-      if (newTax !== null) {
-        const parsed = parseInt(newTax)
-        if (!isNaN(parsed) && parsed >= 0 && parsed <= 99) {
-          // Optionally, update parent's tax options here if needed
-          item.tax = parsed
-        } else {
-          alert("Invalid tax rate.")
-          item.tax = 0
-        }
-      } else {
-        item.tax = 0
-      }
-    }
-  }
-  
-  // Remove a row from the local items
-  function removeRow(index: number) {
-    localItems.value.splice(index, 1)
-  }
-  </script>
-  
+  touchRow(row)
+}
+
+function addRow () {
+  rows.value.push({ id: Date.now(), item:'', qty:1, rate:0, tax:0, amount:0 })
+  emit('item-added', plainRows())
+}
+
+function removeRow (idx: number) {
+  rows.value.splice(idx, 1)
+  emit('item-removed', plainRows())
+}
+
+/* expose to template */
+const itemNames = computed(() => itemsOptions.value.map(i => i.name))
+</script>
+

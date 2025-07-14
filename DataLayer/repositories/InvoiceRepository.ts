@@ -15,7 +15,7 @@ export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
     async addWithItems(invoice: IInvoice): Promise<number> {
         const plain = structuredClone(invoice)         // strip proxies
         const { items, ...header } = plain
-
+        if (items.length < 0) return 0;
         // make sure header has no id (auto‑inc) and each row gets a fresh PK
         delete header.id
         items?.forEach(r => delete r.id)

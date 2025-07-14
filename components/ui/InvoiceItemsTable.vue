@@ -19,29 +19,27 @@
 
           <td class="border px-2">
             <UInputMenu
-              v-model="row.item"
-              :items="itemNames"
-              placeholder="Select or enter item"
-              class="w-full"
-              @update:model-value="val => onItemSelect(val, row)"
-            />
+v-model="row.item" :items="itemNames" placeholder="Select or enter item" class="w-full"
+              @update:model-value="val => onItemSelect(val, row)" />
           </td>
 
           <td class="border px-2">
-            <UInput v-model.number="row.qty" type="number" class="w-16 text-right"  @update:model-value="() => touchRow(row)"/>
+            <UInput
+v-model.number="row.qty" type="number" class="w-16 text-right"
+              @update:model-value="() => touchRow(row)" />
           </td>
 
           <td class="border px-2">
-            <UInput v-model.number="row.rate" type="number" class="w-20 text-right"  @update:model-value="() => touchRow(row)"/>
+            <UInput
+v-model.number="row.rate" type="number" class="w-20 text-right"
+              @update:model-value="() => touchRow(row)" />
           </td>
 
           <td class="border px-2">
             <USelect
-              v-model.number="row.tax"
-              :items="taxSelectItems"
-              class="w-24"
-               @update:model-value="() => touchRow(row)"
-            />
+v-model.number="row.tax"
+              :items="taxItems.map(t => ({ value: t.rate, label: `${t.name} (${t.rate})` }))" class="w-24"
+              @update:model-value="() => touchRow(row)" />
           </td>
 
           <td class="border px-2 text-right">
@@ -111,7 +109,8 @@ onMounted(async () => {
     useTaxItemRepo().getAll()
   ])
   itemsOptions.value = itemList
-  taxItems.value     = taxList
+  taxItems.value = taxList
+  console.log('loaded: ', taxItems.value, taxList)
 
   emit('loaded')
 })

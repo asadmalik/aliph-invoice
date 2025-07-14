@@ -74,7 +74,7 @@ import { useCustomerRepo } from '~/composables/useRepos';
   })
 
   const avatar = computed<AvatarProps>(() => {
-    return selectItems.value.find(item => item.value === selectedIdLocal.value)?.avatar || ''
+    return selectItems.value.find(item => item.value === selectedIdLocal.value)?.avatar || { }
   })
 
   const selectedCustomer = computed<ICustomer | null>(() => {

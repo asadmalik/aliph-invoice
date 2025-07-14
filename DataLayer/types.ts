@@ -1,5 +1,4 @@
 /* File: DataLayer/types.ts */
-/* File: DataLayer/types.ts */
 
 export interface ICustomer {
     id?: number

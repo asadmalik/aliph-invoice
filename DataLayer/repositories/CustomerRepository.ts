@@ -12,7 +12,12 @@ export class CustomerRepository extends BaseRepository<ICustomer> {
     async findByName(name: string): Promise<ICustomer[]> {
         return this.table.where('name').equalsIgnoreCase(name).toArray()
     }
-
+    async findByNtnCnic(id: string) {
+        return this.table.where('ntnCnic').equals(id).first()
+    }
+    async filterByProvince(code: string) {
+        return this.table.where('provinceCode').equals(code).toArray()
+    }
     /** TODO: generate new functions getAll and get(id) */
 }
 

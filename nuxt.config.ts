@@ -21,7 +21,7 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
   ui: {
-    
+    prefix: 'U',
   },
   future: {
     compatibilityVersion: 4

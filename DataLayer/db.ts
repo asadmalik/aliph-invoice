@@ -1,23 +1,76 @@
-/* File: DataLayer/db.ts */
-import type { Table } from 'dexie';
-import Dexie from 'dexie';
-import type { ICustomer, IInvoice, IInvoiceItem, IItem, ITaxItem } from './types'; // or individual interfaces
+import type { Table } from 'dexie'
+import Dexie from 'dexie'
+import type {
+    ICustomer,
+    IDocType,
+    IHsCode,
+    IInvoice, IInvoiceItem, IItem,
+    IProvince,
+    ISroItem,
+    ITaxItem,
+    ITransactionType,
+    IUom
+} from './types'
+
+/* ============================================================
+   Dexie v3 – aligned with new DI fields & reference tables
+   ============================================================ */
 
 class AliphInvoiceDB extends Dexie {
-    public customers!: Table<ICustomer, number>
-    public invoices!: Table<IInvoice, number>
-    public items!: Table<IItem, number>
-    public taxItems!: Table<ITaxItem, number>
-    public invoiceItems!: Table<IInvoiceItem, number>
+    /* ---------- Masters & Tx tables --------------------------- */
+    customers!: Table<ICustomer, number>
+    items!: Table<IItem, number>
+    taxItems!: Table<ITaxItem, number>
+
+    invoices!: Table<IInvoice, number>          // header only
+    invoiceItems!: Table<IInvoiceItem, number>
+
+    /* ---------- Reference caches (daily refresh) -------------- */
+    ref_province!: Table<IProvince, string>
+    ref_uom!: Table<IUom, string>
+    ref_hs_code!: Table<IHsCode, string>
+    ref_doc_type!: Table<IDocType, number>
+    ref_transaction_type!: Table<ITransactionType, number>
+    ref_sro_item!: Table<ISroItem, [string, string]> // [scheduleNo, serialNo]
 
     constructor() {
-        super('aliph_invoice')
-        this.version(2).stores({
-            customers: '++id,name,phone,email,address,companyName,currency',
-            invoices: '++id,customerId,invoiceNumber,invoiceDate,dueDate',
-            invoiceItems: '++id,invoiceId,item,qty,rate,tax,amount',   // new!
-            items: '++id,name,unitType,rate',                   // product catalogue
-            taxItems: '++id,name,rate'
+        super('aliph_invoice_db')
+
+        /* version(3) introduces:
+           – new columns on existing tables
+           – six brand-new reference tables                             */
+        this.version(4).stores({
+            /* CUSTOMER
+               +provinceCode, +ntnCnic                                                       */
+            customers: '++id,name,provinceCode,ntnCnic,email,phone',
+
+            /* ITEM CATALOGUE
+               +hsCode +uomCode for DI                                                       */
+            items: '++id,name,hsCode,uomCode,unitType,rate',
+
+            /* TAX ITEMS – unchanged                                                         */
+            taxItems: '++id,name,rate',
+
+            /* INVOICE HEADER
+               New columns: status, scenarioId, documentTypeId, transactionTypeId,
+               sellerProvinceCode, buyerProvinceCode, fbrInvoiceNumber                      */
+            invoices:
+                '++id,invoiceNumber,invoiceDate,dueDate,customerId,' +
+                'status,scenarioId,documentTypeId,transactionTypeId,' +
+                'sellerProvinceCode,buyerProvinceCode,fbrInvoiceNumber',
+
+            /* INVOICE LINE-ITEMS
+               Added DI fields: hsCode,uomCode,sroScheduleNo,sroItemSerialNo                */
+            invoiceItems:
+                '++id,invoiceId,hsCode,uomCode,sroScheduleNo,sroItemSerialNo',
+
+            /* ------------ Reference look-ups ----------------------- */
+            ref_province: '++id, provinceId',                 // & = primary key (string)
+            ref_uom: '++id, uomId',
+            ref_hs_code: '&hsCode',
+            ref_doc_type: '++id',
+            ref_transaction_type: '++id',
+            ref_sro_item: '[sroScheduleNo+sroItemSerialNo]',   // compound PK
         })
     }
 }

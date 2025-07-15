@@ -21,6 +21,15 @@ export const useItemRepo = () => {
   return $itemRepo
 }
 
+export const useHsCodeRepo = () => {
+  const { $hsCodeRepo } = useNuxtApp()
+  return $hsCodeRepo
+}
+export const useUomRepo = () => {
+  const { $uomRepo } = useNuxtApp()
+  return $uomRepo
+}
+
 /** Invoice repository */
 export const useInvoiceRepo = () => {
   const { $invoiceRepo } = useNuxtApp()
@@ -31,4 +40,15 @@ export const useInvoiceRepo = () => {
 export const useTaxItemRepo = () => {
   const { $taxItemRepo } = useNuxtApp()
   return $taxItemRepo
+}
+
+/** Province lookup */
+export const useProvinceRepo = () => {
+  const { $provinceRepo } = useNuxtApp()
+  return $provinceRepo
+}
+
+export const useTransactionTypeRepo = () => {
+  const { $transTypeRepo } = useNuxtApp()
+  return $transTypeRepo
 }

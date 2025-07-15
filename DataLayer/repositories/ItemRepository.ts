@@ -13,6 +13,10 @@ export class ItemRepository extends BaseRepository<IItem> {
     async getByInvoice(invoiceId: number): Promise<IItem[]> {
         return this.table.where('id').equals(invoiceId).toArray()
     }
+
+    async findByHs(hs: string) {
+        return this.table.where('hsCode').equals(hs).toArray()
+    }
 }
 
 export const itemRepo = new ItemRepository()

@@ -9,7 +9,7 @@
                 draft: 'gray',
                 validated: 'blue',
                 posted: 'green',
-                error: 'red'
+                error: 'error'
             }[invoice.status]" class="uppercase px-3 py-1 rounded">
                 {{ invoice.status }}
             </UBadge>
@@ -23,7 +23,7 @@
                     <UInput v-model="companyProfile.businessName" readonly />
                 </UFormField>
                 <UFormField label="Seller Province">
-                    <USelect v-model="invoice.sellerProvinceId" :items="provinceOptions"  disabled />
+                    <USelect v-model="invoice.sellerProvinceId" :items="provinceOptions" disabled />
                 </UFormField>
                 <UFormField label="Seller Address">
                     <UInput v-model="companyProfile.address" readonly />
@@ -251,11 +251,11 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue'
     const provinceOptions = ref<SelectOption<string>[]>([])
     const transactionTypeOptions = ref<SelectOption<number>[]>([])
 
-    
+
     // — Init look-ups & seed data —
     onMounted(async () => {
         await nextTick();
-       
+
         const provinces = await provinceRepo.getAll()
         //console.log('🌍 Provinces loaded:', provinceOptions.value);
         const transactionTypes = await transTypeRepo.getAll()

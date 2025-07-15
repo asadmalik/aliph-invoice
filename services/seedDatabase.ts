@@ -11,6 +11,7 @@ import type {
 
 import { customerRepo } from '@/DataLayer/repositories/CustomerRepository'
 import { itemRepo } from '@/DataLayer/repositories/ItemRepository'
+import { provinceRepo, uomRepo, docTypeRepo, transTypeRepo, hsCodeRepo, sroItemRepo } from '~/DataLayer/repositories/ReferenceRepos'
 
 /**
  * Fetches all PRAL look-ups and upserts them into IndexedDB.
@@ -37,14 +38,14 @@ export async function seedDatabase() {
     //console.log('api',hsCodes, sroItems);
 
     // 2) Bulk-upsert into each ref_* table
-/*     await Promise.all([
+    await Promise.all([
         provinceRepo.bulkUpsert(provinces),
         uomRepo.bulkUpsert(uoms),
         docTypeRepo.bulkUpsert(docTypes),
         transTypeRepo.bulkUpsert(transTypes),
         hsCodeRepo.bulkUpsert(hsCodes),
         sroItemRepo.bulkUpsert(sroItems),
-    ]) */
+    ])
 
     console.log('✅ Reference tables seeded:',
         `${provinces.length} provinces`,

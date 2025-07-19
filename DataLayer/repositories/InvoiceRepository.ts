@@ -68,6 +68,28 @@ export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
     async getByCustomer(customerId: number) {
         return this.table.where('customerId').equals(customerId).toArray()
     }
+
+    /** Fetch all invoices with their items */
+    async getByItemId(itemId: number): Promise<IInvoice[]> {
+        const invoices = await this.table.toArray()
+        const items = await db.invoiceItems.where('itemId').equals(itemId).toArray()
+
+        return invoices.map(inv => {
+            const invItems = items.filter(i => i.invoiceId === inv.id)
+            return { ...inv, items: invItems }
+        })
+    }
+
+    /** Fetch all invoices with their items' hsCode */
+    async getByHsCode(hsCode: string): Promise<IInvoice[]> {
+        const invoices = await this.table.toArray()
+        const items = await db.invoiceItems.where('hsCode').equals(hsCode).toArray()
+
+        return invoices.map(inv => {
+            const invItems = items.filter(i => i.invoiceId === inv.id)
+            return { ...inv, items: invItems }
+        })
+    }
 }
 
 export const invoiceRepo = new InvoiceRepository()

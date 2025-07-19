@@ -1,0 +1,1295 @@
+{
+    "customers": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Internal surrogate key for each customer record",
+                "type": [
+                    "UUID",
+                    "INTEGER"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "ntn_cnic",
+                "description": "FBR‐issued business NTN (7 or 9 digits) or NADRA CNIC (13 digits)",
+                "type": [
+                    "CHAR(7)",
+                    "CHAR(9)",
+                    "CHAR(13)"
+                ],
+                "constraints": [
+                    "UNIQUE",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "name",
+                "description": "Legal or trade name of the customer",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "province_id",
+                "description": "Two‐character code referencing the province (from ref_province lookup)",
+                "type": [
+                    "CHAR(2)"
+                ],
+                "constraints": [
+                    "FOREIGN KEY → ref_province(code)",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "address",
+                "description": "Mailing address of the customer",
+                "type": [
+                    "TEXT"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "registration_type",
+                "description": "Whether the customer is Registered or Unregistered with FBR",
+                "type": [
+                    "ENUM('Registered','Unregistered')"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "created_at",
+                "description": "Timestamp when this record was created",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT now()"
+                ]
+            },
+            {
+                "name": "created_by",
+                "description": "User ID of who created this record",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "updated_at",
+                "description": "Timestamp when this record was last modified",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "updated_by",
+                "description": "User ID of who last modified this record",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            }
+        ]
+    },
+    "items": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Internal surrogate key for each item",
+                "type": [
+                    "INT AUTO_INCREMENT"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "name",
+                "description": "Human-readable product name",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Longer text description or details of the product",
+                "type": [
+                    "VARCHAR(500)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "location",
+                "description": "Physical or logical storage location code for the item",
+                "type": [
+                    "VARCHAR(100)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "hs_code",
+                "description": "Harmonized System Code classifying the product",
+                "type": [
+                    "CHAR(8)",
+                    "CHAR(10)"
+                ],
+                "constraints": [
+                    "FOREIGN KEY → ref_hs_code(code)",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "uom_id",
+                "description": "Unit-of-Measure code (e.g. KG, PCS)",
+                "type": [
+                    "CHAR(3)"
+                ],
+                "constraints": [
+                    "FOREIGN KEY → ref_uom(code)",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "default_salestax_rate",
+                "description": "Default FBR sales-tax rate percentage for this item",
+                "type": [
+                    "DECIMAL(5,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "fbr_sale_type",
+                "description": "FBR sale-type code (e.g. 'Goods at Standard Rate'); foreign key into sale_types lookup",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "FOREIGN KEY → sale_types(code)",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "created_at",
+                "description": "Timestamp when this record was created",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT now()"
+                ]
+            },
+            {
+                "name": "created_by",
+                "description": "User ID of who created this record",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "updated_at",
+                "description": "Timestamp when this record was last modified",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "updated_by",
+                "description": "User ID of who last modified this record",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            }
+        ]
+    },
+    "invoice_header": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Internal surrogate key for each invoice",
+                "type": [
+                    "UUID",
+                    "INT AUTO_INCREMENT"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "invoice_type",
+                "description": "Type of document (Sale Invoice, Purchase Invoice, Debit Note, Credit Note)",
+                "type": [
+                    "ENUM('Sale Invoice','Purchase Invoice','Debit Note','Credit Note')"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "FOREIGN KEY → ref_doc_type(id)"
+                ]
+            },
+            {
+                "name": "invoice_date",
+                "description": "Date the invoice was issued (YYYY-MM-DD)",
+                "type": [
+                    "DATE"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "seller_id",
+                "description": "Reference to the issuing company in the customers table",
+                "type": [
+                    "UUID",
+                    "INT"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "FOREIGN KEY → customers(id)"
+                ]
+            },
+            {
+                "name": "buyer_id",
+                "description": "Reference to the buying party in the customers table",
+                "type": [
+                    "UUID",
+                    "INT"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "FOREIGN KEY → customers(id)"
+                ]
+            },
+            {
+                "name": "invoice_ref_no",
+                "description": "Reference number for debit/credit notes",
+                "type": [
+                    "VARCHAR(100)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "scenario_id",
+                "description": "Sandbox scenario code (SNO01…SNO28)",
+                "type": [
+                    "CHAR(5)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "total_items",
+                "description": "Count of line items on this invoice",
+                "type": [
+                    "INT"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "total_value_excl_st",
+                "description": "Sum of all line-item values excluding sales tax",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "total_discount",
+                "description": "Total discount applied at the invoice level",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "total_sales_tax",
+                "description": "Sum of all line-item sales tax amounts",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "total_fed",
+                "description": "Sum of all line-item FED (Federal Excise Duty) amounts",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "total_amount",
+                "description": "Grand total including taxes and less discounts",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "fbr_invoice_number",
+                "description": "Official invoice number returned by the FBR API",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "payment_terms",
+                "description": "Net-due days (e.g. 0=Cash, 30=Net-30)",
+                "type": [
+                    "INT"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "due_date",
+                "description": "Calculated due date = invoice_date + payment_terms",
+                "type": [
+                    "DATE"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "payment_method",
+                "description": "How payment is/was made (Cash, Bank Transfer, Cheque, etc.)",
+                "type": [
+                    "ENUM('Cash','Bank Transfer','Cheque','Other')"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "status",
+                "description": "Current state (Draft, Sent, Unpaid, Partially Paid, Paid, Overdue, Error)",
+                "type": [
+                    "ENUM('Draft','Sent','Unpaid','Partially Paid','Paid','Overdue','Error')"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "total_paid",
+                "description": "Sum of all payments applied to this invoice",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT 0"
+                ]
+            },
+            {
+                "name": "balance_due",
+                "description": "Outstanding amount = total_amount – total_paid",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT 0"
+                ]
+            },
+            {
+                "name": "note",
+                "description": "Optional user memo or comments",
+                "type": [
+                    "TEXT"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "created_at",
+                "description": "Timestamp when this invoice record was created",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT now()"
+                ]
+            },
+            {
+                "name": "created_by",
+                "description": "User ID of who created this invoice",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "updated_at",
+                "description": "Timestamp when this invoice record was last modified",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "updated_by",
+                "description": "User ID of who last modified this invoice",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            }
+        ]
+    },
+    "invoice_item": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Internal surrogate key for each line item",
+                "type": [
+                    "UUID",
+                    "INT AUTO_INCREMENT"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "invoice_id",
+                "description": "Reference to parent invoice in invoice_header",
+                "type": [
+                    "UUID",
+                    "INT"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "FOREIGN KEY → invoice_header(id)"
+                ]
+            },
+            {
+                "name": "hs_code",
+                "description": "Harmonized System Code for this line",
+                "type": [
+                    "CHAR(8)",
+                    "CHAR(10)"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "FOREIGN KEY → ref_hs_code(code)"
+                ]
+            },
+            {
+                "name": "product_description",
+                "description": "Free-text description of this line item",
+                "type": [
+                    "VARCHAR(500)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "rate",
+                "description": "Tax rate percentage applied to this line (e.g. 18)",
+                "type": [
+                    "DECIMAL(7,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "uom_id",
+                "description": "Unit-of-Measure code for this line",
+                "type": [
+                    "CHAR(3)"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "FOREIGN KEY → ref_uom(code)"
+                ]
+            },
+            {
+                "name": "quantity",
+                "description": "Quantity of items for this line",
+                "type": [
+                    "DECIMAL(14,3)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "total_values",
+                "description": "Extended value = unit_price × quantity",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "value_sales_excl_st",
+                "description": "Value of sales excluding sales tax",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "fixed_notified_value",
+                "description": "Fixed notified value or retail price (if applicable)",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "sales_tax_applicable",
+                "description": "Sales-tax amount applied to this line",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "sales_tax_withheld_source",
+                "description": "Sales-tax withheld at source amount",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "extra_tax",
+                "description": "Any extra tax amount for this line",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "further_tax",
+                "description": "Any further tax amount for this line",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "fed_payable",
+                "description": "Federal Excise Duty amount for this line",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "sale_type",
+                "description": "FBR sale-type code for this line item",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "sro_schedule_no",
+                "description": "SRO schedule number (if item falls under special order)",
+                "type": [
+                    "VARCHAR(20)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "sro_item_serial_no",
+                "description": "Serial number within SRO item list (if applicable)",
+                "type": [
+                    "VARCHAR(20)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "created_at",
+                "description": "Timestamp when this line item was created",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT now()"
+                ]
+            },
+            {
+                "name": "created_by",
+                "description": "User ID of who created this line item",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "updated_at",
+                "description": "Timestamp when this line item was last modified",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "updated_by",
+                "description": "User ID of who last modified this line item",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            }
+        ]
+    },
+    "invoice_payments": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Internal surrogate key for each payment",
+                "type": [
+                    "UUID",
+                    "INT AUTO_INCREMENT"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "invoice_id",
+                "description": "Reference to the invoice in invoice_header",
+                "type": [
+                    "UUID",
+                    "INT"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "FOREIGN KEY → invoice_header(id)"
+                ]
+            },
+            {
+                "name": "payment_date",
+                "description": "Date when payment was received",
+                "type": [
+                    "DATE"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "amount",
+                "description": "Amount applied in this payment",
+                "type": [
+                    "DECIMAL(18,2)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "method",
+                "description": "Payment method (Cash, Bank Transfer, Cheque, etc.)",
+                "type": [
+                    "ENUM('Cash','Bank Transfer','Cheque','Other')"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "reference_no",
+                "description": "Optional reference (cheque number, transaction ID)",
+                "type": [
+                    "VARCHAR(100)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "created_at",
+                "description": "Timestamp when this payment record was created",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT now()"
+                ]
+            },
+            {
+                "name": "created_by",
+                "description": "User ID of who created this payment record",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "updated_at",
+                "description": "Timestamp when this payment record was last modified",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "updated_by",
+                "description": "User ID of who last modified this payment record",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            }
+        ]
+    },
+    "ref_province": {
+        "fields": [
+            {
+                "name": "code",
+                "description": "Two-character province code",
+                "type": [
+                    "CHAR(2)"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Full name of the province",
+                "type": [
+                    "VARCHAR(100)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            }
+        ]
+    },
+    "ref_doc_type": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Document type identifier",
+                "type": [
+                    "INT"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "code",
+                "description": "Machine-readable code (e.g. 'Sale Invoice', 'Debit Note')",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "UNIQUE",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Human-friendly description",
+                "type": [
+                    "VARCHAR(100)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            }
+        ]
+    },
+    "ref_hs_code": {
+        "fields": [
+            {
+                "name": "code",
+                "description": "Harmonized System code (8–10 digits)",
+                "type": [
+                    "CHAR(8)",
+                    "CHAR(10)"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Product classification description",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            }
+        ]
+    },
+    "ref_uom": {
+        "fields": [
+            {
+                "name": "code",
+                "description": "Unit-of-Measure code (e.g. 'KG', 'PCS')",
+                "type": [
+                    "CHAR(3)"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Full name of the UOM",
+                "type": [
+                    "VARCHAR(100)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            }
+        ]
+    },
+    "ref_transaction_type": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Transaction type identifier",
+                "type": [
+                    "INT"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "code",
+                "description": "Code for transaction type",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "UNIQUE",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Human-readable name for transaction type",
+                "type": [
+                    "VARCHAR(100)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            }
+        ]
+    },
+    "sale_types": {
+        "fields": [
+            {
+                "name": "code",
+                "description": "FBR sale type code (e.g. 'Goods at Standard Rate')",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Detailed description of sale type",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            }
+        ]
+    },
+    "scenarios": {
+        "fields": [
+            {
+                "name": "code",
+                "description": "Sandbox scenario code (SNO01…SNO28)",
+                "type": [
+                    "CHAR(5)"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "What business-rule bundle this scenario exercises",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            }
+        ]
+    },
+    "ref_sro_schedule": {
+        "fields": [
+            {
+                "name": "sro_schedule_no",
+                "description": "Statutory Regulatory Order schedule number",
+                "type": [
+                    "VARCHAR(20)"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Description of the SRO schedule",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            }
+        ]
+    },
+    "ref_sro_item": {
+        "fields": [
+            {
+                "name": "sro_item_serial_no",
+                "description": "Serial number within an SRO item list",
+                "type": [
+                    "VARCHAR(20)"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "description",
+                "description": "Description of the specific SRO item",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            }
+        ]
+    },
+    "users": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Internal surrogate key for each user",
+                "type": [
+                    "UUID",
+                    "INT AUTO_INCREMENT"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "username",
+                "description": "Unique login identifier",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "UNIQUE",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "password_hash",
+                "description": "Hashed password for authentication",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "email",
+                "description": "Unique user email address",
+                "type": [
+                    "VARCHAR(255)"
+                ],
+                "constraints": [
+                    "UNIQUE",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "full_name",
+                "description": "User’s full name",
+                "type": [
+                    "VARCHAR(100)"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "role",
+                "description": "User role for access control (e.g. 'Admin','User')",
+                "type": [
+                    "ENUM('Admin','User','Viewer')"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT 'User'"
+                ]
+            },
+            {
+                "name": "last_login",
+                "description": "Timestamp of last successful login",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "created_at",
+                "description": "When this user account was created",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT now()"
+                ]
+            },
+            {
+                "name": "updated_at",
+                "description": "When this user account was last modified",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            }
+        ]
+    },
+    "audit_log": {
+        "fields": [
+            {
+                "name": "id",
+                "description": "Internal key for each audit entry",
+                "type": [
+                    "UUID",
+                    "INT AUTO_INCREMENT"
+                ],
+                "constraints": [
+                    "PRIMARY KEY",
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "table_name",
+                "description": "Name of the table where change occurred",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "record_id",
+                "description": "Primary key of the record that changed",
+                "type": [
+                    "UUID",
+                    "INT"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "field_name",
+                "description": "Column name that was changed",
+                "type": [
+                    "VARCHAR(50)"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "old_value",
+                "description": "Previous value before change",
+                "type": [
+                    "TEXT"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "new_value",
+                "description": "New value after change",
+                "type": [
+                    "TEXT"
+                ],
+                "constraints": [
+                    "NULLABLE"
+                ]
+            },
+            {
+                "name": "action",
+                "description": "Type of operation",
+                "type": [
+                    "ENUM('INSERT','UPDATE','DELETE')"
+                ],
+                "constraints": [
+                    "NOT NULL"
+                ]
+            },
+            {
+                "name": "changed_by",
+                "description": "User ID who performed the change",
+                "type": [
+                    "UUID"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "FOREIGN KEY → users(id)"
+                ]
+            },
+            {
+                "name": "changed_at",
+                "description": "Timestamp when the change was made",
+                "type": [
+                    "TIMESTAMP"
+                ],
+                "constraints": [
+                    "NOT NULL",
+                    "DEFAULT now()"
+                ]
+            }
+        ]
+    }
+}

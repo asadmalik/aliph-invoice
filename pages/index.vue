@@ -1,5 +1,27 @@
 <template>
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+    <UCard
+      :ui="{root:'hover:shadow-lg transition flex flex-col gap-4 space-between justify-between', header:'flex items-center gap-2', footer:'flex flex-row justify-between'}">
+      <template #header>
+        <UIcon name="i-heroicons-numbered-list-solid" class="h-8 w-8 text-primary" />
+        <h1 class="text-lg font-semibold">Items</h1>
+      </template>
+
+      <div class="h-full flex flex-col gap-2.5 justify-between flex-auto grow">
+        <div> Search</div>
+        <USelectMenu :items="items" class="w-full" size="lg" />
+      </div>
+
+      <template #footer>
+        <UButton to="/items/" color="primary" icon="i-heroicons-numbered-list-solid">Manage Items</UButton>
+        <UButton to="/items/new" color="primary" icon="i-heroicons-plus">
+          Add New Item
+        </UButton>
+      </template>
+    </UCard>
+
+
     <UCard
 v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' } }"
       class="hover:shadow-lg transition">
@@ -22,7 +44,14 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
     layout: 'default'
   })
 
+  const search = ref('');
+
   const base = (type: string) => `/voucher/${type}`
+
+  const items = ref(await useItemRepo().getAll().then(items => items.map(item => ({
+    label: item.name,
+    id: item.id
+  }))));
 
   const cards = [
     // Sale Invoices

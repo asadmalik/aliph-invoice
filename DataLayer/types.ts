@@ -66,11 +66,14 @@ export interface ICustomer {
     address?: string
     companyName?: string
     currency?: string
-
-    /** ① Province code – copied to invoice header */
+    registrationType: 'Filer' | 'nonFiler' | 'Exempt' | 'Unregistered' | 'Other' | 'Registered'
     provinceCode?: string
     /** NTN or CNIC (DI requires at least one) */
     ntnCnic?: string
+    created_at?: string | null
+    created_by?: string | null
+    updated_at?: string | null
+    updated_by?: string | null
 }
 
 export type UnitType = 'Fixed' | 'Hourly' | 'UOM'
@@ -88,6 +91,39 @@ export interface IItem {
     uomCode?: string
     /** HS code – pulled from IHsCode list */
     hsCode?: string
+
+    /** Free-form description of the item */
+    description?: string
+
+    /** Warehouse or storage location code */
+    location?: string
+
+    /** Default sales tax rate (0–100%) */
+    defaultSalesTaxRate?: number
+
+    /** FBR sale type, e.g. "Goods at Standard Rate" */
+    fbrSaleType?: string
+
+    /** Quantity for this invoice line */
+    quantity?: number
+
+    /** Tax rate applied to this line (0–100%) */
+    tax?: number
+
+    /** Optional label for the tax */
+    taxName?: string
+
+    /** When this record was created */
+    createdAt?: string
+
+    /** UID of the user who created it */
+    createdBy?: string
+
+    /** When this record was last updated */
+    updatedAt?: string | null
+
+    /** UID of the user who last updated it */
+    updatedBy?: string | null
 }
 
 /* ---------- Tax rules (unchanged) --------------------------- */

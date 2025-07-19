@@ -1,76 +1,130 @@
-<!--  pages\items\[id]\edit.vue  -->  
 <template>
-    <div class="w-5xl mx-auto p-6">
-        <h1 class="text-2xl font-semibold mb-6">Edit Item</h1>
+    <UContainer class="max-w-4xl py-10">
+        <UCard>
+            <template #header>
+                <div class="text-xl font-semibold">Edit Item</div>
+            </template>
 
-        <!-- Loading indicator -->
-        <div v-if="loading" class="text-center py-10">Loading…</div>
+            <UForm :state="form" class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="handleSubmit">
+                <!-- Reuse same fields as in new.vue -->
+                <UFormField label="Item Name" description="Name of the product or service." hint="Required">
+                    <UInput v-model="form.name" placeholder="e.g. Premium Basmati Rice" />
+                </UFormField>
 
-        <!-- Item form -->
-        <UForm v-else :state="form" @submit="handleSubmit">
-            <div class="grid gap-4">
-                <UInput v-model="form.name" label="Name" placeholder="Service / Product name" required />
+                <UFormField label="HS Code" description="6–8 digit code e.g. 10063000." hint="Optional">
+                    <UInput v-model="form.hsCode" placeholder="e.g. 10063000" />
+                </UFormField>
 
-                <!-- Unit Type -->
-                <USelect v-model="form.unitType" :items="unitTypes" option-attribute="label" value-attribute="value"
-                    label="Unit Type" />
+                <UFormField
+label="Description" description="Clarify variants or packaging." hint="Optional"
+                    class="md:col-span-2">
+                    <UTextarea v-model="form.description" :rows="2" placeholder="e.g. 25 kg sack" />
+                </UFormField>
 
-                <UInput v-model.number="form.rate" label="Rate" type="number" min="0" step="any" />
+                <UFormField label="Unit Type" description="Fixed, Hourly, or UOM." hint="Required">
+                    <USelect
+v-model="form.unitType" :items="unitTypes" option-attribute="label"
+                        value-attribute="value" />
+                </UFormField>
 
-                <UButton type="submit" class="mt-4">Save Item</UButton>
-            </div>
-        </UForm>
+                <UFormField label="UOM Code" description="e.g. KG, PCS" hint="Optional">
+                    <UInput v-model="form.uomCode" placeholder="e.g. KG" />
+                </UFormField>
 
-        <!-- Success alert -->
-        <UAlert v-if="saved" title="Woohoo!" description="Item saved." color="neutral" variant="outline" close
-            class="mt-10" />
-    </div>
+                <UFormField label="Rate" description="Price per unit (excl. tax)" hint="Required">
+                    <UInput v-model.number="form.rate" type="number" min="0" placeholder="e.g. 25.00" />
+                </UFormField>
+
+                <UFormField label="Location" description="Warehouse or storage code." hint="Optional">
+                    <UInput v-model="form.location" placeholder="e.g. WH-A1" />
+                </UFormField>
+
+                <UFormField label="FBR Sale Type" description="Tax category" hint="Required">
+                    <USelect
+v-model="form.fbrSaleType" :items="fbrSaleTypeOptions" option-attribute="label"
+                        value-attribute="value" />
+                </UFormField>
+
+                <UFormField label="Sales Tax Rate (%)" description="e.g. 17 for 17%" hint="0–100%">
+                    <UInput
+v-model.number="form.defaultSalesTaxRate" type="number" step="0.01"
+                        placeholder="e.g. 17.00" />
+                </UFormField>
+
+                <div class="md:col-span-2 flex justify-end mt-4">
+                    <UButton type="submit" color="primary" size="lg" icon="i-heroicons-pencil-square">
+                        Update Item
+                    </UButton>
+                </div>
+            </UForm>
+        </UCard>
+
+        <UAlert v-if="updated" color="green" variant="soft" class="mt-6" icon="i-heroicons-check-circle">
+            Item updated successfully!
+        </UAlert>
+
+        <UAlert v-if="notFound" color="red" variant="soft" class="mt-6" icon="i-heroicons-x-circle">
+            Item not found.
+        </UAlert>
+    </UContainer>
 </template>
 
 <script setup lang="ts">
-    import { useItemRepo } from '@/composables/useRepos'
-    import type { IItem, UnitType } from '@/DataLayer/types'
 
+    import type { IItem } from '@/DataLayer/types'
+
+    definePageMeta({ layout: 'default' })
 
     const route = useRoute()
     const router = useRouter()
+    const itemRepo = useItemRepo()
 
-    // base reactive form
-    const form = reactive<IItem>({
+    const updated = ref(false)
+    const notFound = ref(false)
+    const id = route.params.id as string
+
+    const unitTypes = [
+        { label: 'UOM', value: 'UOM' },
+        { label: 'Fixed', value: 'Fixed' },
+        { label: 'Hourly', value: 'Hourly' },
+    ]
+    const fbrSaleTypeOptions = [
+        { label: 'Goods at Standard Rate', value: 'Goods at Standard Rate' },
+        { label: 'Goods at Reduced Rate', value: 'Goods at Reduced Rate' },
+        { label: 'Exempt Goods', value: 'Exempt Goods' },
+        { label: 'Services', value: 'Services' },
+    ]
+
+    const form = reactive<Omit<IItem, 'createdAt' | 'createdBy' | 'updatedAt' | 'updatedBy'>>({
+        id: 0,
         name: '',
-        unitType: 'Fixed' as UnitType,
+        description: '',
+        location: '',
+        hsCode: '',
+        uomCode: '',
+        defaultSalesTaxRate: 0,
+        fbrSaleType: 'Goods at Standard Rate',
+        unitType: 'UOM',
         rate: 0,
     })
 
-    const unitTypes = [
-        { label: 'Fixed', value: 'Fixed' },
-        { label: 'Hourly', value: 'Hourly' }
-    ]
-
-    const saved = ref(false)
-    const loading = ref(true)
-    let itemRepo: ReturnType<typeof useItemRepo> | null = null
-
     onMounted(async () => {
-        itemRepo = useItemRepo()
-        const id = Number(route.params.id)
-        const data = await itemRepo.get(id)
-        console.log(data)
-
-        if (!data) {
-            // Item not found, redirect back to list
-            return router.push('/items')
+        const item = await itemRepo.get(parseInt(id))
+        if (!item) {
+            notFound.value = true
+            return
         }
-
-        Object.assign(form, data)
-        loading.value = false
+        Object.assign(form, item)
     })
 
     const handleSubmit = async () => {
-        if (!itemRepo) return
+        await itemRepo.update(parseInt(id), {
+            ...form,
+            updatedAt: new Date().toISOString(),
+            updatedBy: 'demo-user-id',
+        })
 
-        await itemRepo.update(Number(route.params.id), { ...form })
-        saved.value = true
-        setTimeout(() => (saved.value = false), 3000)
+        updated.value = true
+        setTimeout(() => (updated.value = false), 3000)
     }
 </script>

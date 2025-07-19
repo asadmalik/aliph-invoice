@@ -1,308 +1,83 @@
-<!-- File: pages/repository-test.vue -->
 <template>
-    <UContainer as="div" class="max-w-5xl mx-auto p-6 space-y-8">
-        <h1 class="text-2xl font-bold">Repository Smoke‑Test Page</h1>
+    <UContainer class="flex flex-col gap-6 py-10 max-w-4xl mx-auto">
 
-        <!-- Customer Tests -->
+        <h2 class="text-2xl font-semibold">Customer & Item Repository Tests</h2>
+
+        <!-- CUSTOMER TESTS -->
         <UCard>
-            <template #header>
-                <span class="font-semibold">CustomerRepository</span>
-            </template>
-            <template #default>
-                <div class="flex flex-wrap gap-2">
-                    <UButton size="sm" @click="addCustomer">Add</UButton>
-                    <UButton size="sm" @click="getCustomer">Get (id)</UButton>
-                    <UButton size="sm" @click="getAllCustomers">Get All</UButton>
-                    <UButton size="sm" @click="updateCustomer">Update (id)</UButton>
-                    <UButton size="sm" color="error" @click="deleteCustomer">Delete (id)</UButton>
-                    <UButton size="sm" @click="findCustomerByName">Find By Name</UButton>
+            <template #header>Customer Tests</template>
+
+            <div class="flex flex-wrap gap-4">
+                <UButton color="primary" @click="loadAllCustomers">Load All</UButton>
+                <UButton color="success" @click="seedCustomers">Seed Demo Customers</UButton>
+                <UInput v-model="searchCustomerName" placeholder="Find by Name" class="w-64" />
+                <UButton color="secondary" @click="searchCustomer">Search</UButton>
+            </div>
+
+            <div class="mt-4 space-y-1 text-sm text-gray-600">
+                <div v-for="customer in customers" :key="customer.id">
+                    {{ customer.name }} — {{ customer.ntnCnic }} ({{ customer.provinceCode }})
                 </div>
-                <pre
-                    class="mt-4 bg-gray-100 dark:bg-gray-800 p-4 rounded text-xs overflow-x-auto h-48">{{ customerLog }}</pre>
-            </template>
+            </div>
         </UCard>
 
-        <!-- Invoice Tests -->
+        <!-- ITEM TESTS -->
         <UCard>
-            <template #header>
-                <span class="font-semibold">InvoiceRepository</span>
-            </template>
-            <template #default>
-                <div class="flex flex-wrap gap-2">
-                    <UButton size="sm" @click="addInvoice">Add</UButton>
-                    <UButton size="sm" @click="getInvoice">Get (id)</UButton>
-                    <UButton size="sm" @click="getAllInvoices">Get All</UButton>
-                    <UButton size="sm" @click="updateInvoice">Update (id)</UButton>
-                    <UButton size="sm" color="red" @click="deleteInvoice">Delete (id)</UButton>
-                    <UButton size="sm" @click="getInvoicesByCustomer">Get By Customer</UButton>
+            <template #header>Item Tests</template>
+
+            <div class="flex flex-wrap gap-4">
+                <UButton color="primary" @click="loadAllItems">Load All</UButton>
+                <UButton color="success" @click="seedItems">Seed Demo Items</UButton>
+                <UInput v-model="searchItemName" placeholder="Find by Name" class="w-64" />
+                <UButton color="secondary" @click="searchItem">Search</UButton>
+            </div>
+
+            <div class="mt-4 space-y-1 text-sm text-gray-600">
+                <div v-for="item in items" :key="item.id">
+                    {{ item.name }} — {{ item.hsCode }} ({{ item.uomCode }})
                 </div>
-                <pre
-                    class="mt-4 bg-gray-100 dark:bg-gray-800 p-4 rounded text-xs overflow-x-auto h-48">{{ invoiceLog }}</pre>
-            </template>
+            </div>
         </UCard>
 
-        <!-- Item Tests -->
-        <UCard>
-            <template #header>
-                <span class="font-semibold">ItemRepository</span>
-            </template>
-            <template #default>
-                <div class="flex flex-wrap gap-2">
-                    <UButton size="sm" @click="addItem">Add</UButton>
-                    <UButton size="sm" @click="getItem">Get (id)</UButton>
-                    <UButton size="sm" @click="getAllItems">Get All</UButton>
-                    <UButton size="sm" @click="updateItem">Update (id)</UButton>
-                    <UButton size="sm" color="red" @click="deleteItem">Delete (id)</UButton>
-                    <UButton size="sm" @click="getItemsByInvoice">Get By Invoice</UButton>
-                </div>
-                <pre
-                    class="mt-4 bg-gray-100 dark:bg-gray-800 p-4 rounded text-xs overflow-x-auto h-48">{{ itemLog }}</pre>
-            </template>
-        </UCard>
-
-        <!-- TaxItem Tests -->
-        <UCard>
-            <template #header>
-                <span class="font-semibold">TaxItemRepository</span>
-            </template>
-            <template #default>
-                <div class="flex flex-wrap gap-2">
-                    <UButton size="sm" @click="addTaxItem">Add</UButton>
-                    <UButton size="sm" @click="getTaxItem">Get (id)</UButton>
-                    <UButton size="sm" @click="getAllTaxItems">Get All</UButton>
-                    <UButton size="sm" @click="updateTaxItem">Update (id)</UButton>
-                    <UButton size="sm" color="red" @click="deleteTaxItem">Delete (id)</UButton>
-                    <UButton size="sm" @click="findTaxByName">Find By Name</UButton>
-                </div>
-                <pre
-                    class="mt-4 bg-gray-100 dark:bg-gray-800 p-4 rounded text-xs overflow-x-auto h-48">{{ taxLog }}</pre>
-            </template>
-        </UCard>
     </UContainer>
 </template>
 
-<script lang="ts" setup>
-    // ----------------------------
-    // Repositories
-    // ----------------------------
+<script setup lang="ts">
+    import { ref } from 'vue'
 
+    import type { ICustomer, IItem } from '~/DataLayer/types'
+    const customerRepo = useCustomerRepo()
+    const itemRepo = useItemRepo()
 
-    const customerRepo = useCustomerRepo();
-    const invoiceRepo = useInvoiceRepo();
-    const itemRepo = useItemRepo();
-    const taxItemRepo = useTaxItemRepo();
+    const customers = ref<ICustomer[]>([])
+    const items = ref<IItem[]>([])
 
-    // State for IDs we generate on‑the‑fly so later tests can reference them
-    const ids = reactive({
-        customerId: 0,
-        invoiceId: 0,
-        itemId: 0,
-        taxItemId: 0
-    })
+    const searchCustomerName = ref('')
+    const searchItemName = ref('')
 
-    // Helper for nice timestamped logs
-    function ts() {
-        return new Date().toLocaleTimeString()
-    }
-    function append(logRef: { value: string }, label: string, payload: unknown) {
-        logRef.value += `\n[${ts()}] ${label}: ${JSON.stringify(payload, null, 2)}`
+    const loadAllCustomers = async () => {
+        customers.value = await customerRepo.getAll()
     }
 
-    // ----------------------------
-    // Customer Tests
-    // ----------------------------
-    const customerLog = ref('')
-
-    async function addCustomer() {
-        try {
-            const id = await customerRepo.add({
-                name: 'Amjad Ali',
-                phone: '+1 555 5555 555',
-                email: 'amjad@example.com',
-                companyName: 'Amjad & Co.',
-                currency: 'PKR'
-            })
-            ids.customerId = id
-            append(customerLog, 'Add OK (id)', id)
-        } catch (e) {
-            append(customerLog, 'Add ERR', e)
-        }
+    const searchCustomer = async () => {
+        customers.value = await customerRepo.findByName(searchCustomerName.value)
     }
 
-    async function getCustomer() {
-        try {
-            const data = await customerRepo.get(ids.customerId)
-            append(customerLog, 'Get', data)
-        } catch (e) {
-            append(customerLog, 'Get ERR', e)
-        }
+    const seedCustomers = async () => {
+        await customerRepo.addDemoCustomers()
+        await loadAllCustomers()
     }
 
-    async function getAllCustomers() {
-        append(customerLog, 'GetAll', await customerRepo.getAll())
+    const loadAllItems = async () => {
+        items.value = await itemRepo.getAll()
     }
 
-    async function updateCustomer() {
-        try {
-            const rows = await customerRepo.update(ids.customerId, { phone: '+92 300 1234567' })
-            append(customerLog, 'Update rows', rows)
-        } catch (e) {
-            append(customerLog, 'Update ERR', e)
-        }
+    const searchItem = async () => {
+        items.value = await itemRepo.findByName(searchItemName.value)
     }
 
-    async function deleteCustomer() {
-        try {
-            await customerRepo.delete(ids.customerId)
-            append(customerLog, 'Delete OK', ids.customerId)
-        } catch (e) {
-            append(customerLog, 'Delete ERR', e)
-        }
-    }
-
-    async function findCustomerByName() {
-        append(customerLog, 'FindByName', await customerRepo.findByName('Amjad Ali'))
-    }
-
-    // ----------------------------
-    // Invoice Tests
-    // ----------------------------
-    const invoiceLog = ref('')
-
-    async function addInvoice() {
-
-        const testItems = [];
-
-        testItems.push(await itemRepo.get(2));
-        testItems.push(await itemRepo.get(3));
-        try {
-            // Ensure we have a customer; create if missing
-            if (!ids.customerId) await addCustomer()
-            const id = await invoiceRepo.add({
-                customerId: ids.customerId,
-                invoiceNumber: 'INV-0001',
-                invoiceDate: new Date().toISOString().split('T')[0],
-                terms: 'Due On Receipt',
-                dueDate: '',
-                billTo: '123 Main St',
-                currencyCode: 'PKR',
-                items: testItems,
-                discount: 0,
-                shipping: 0
-            })
-            ids.invoiceId = id
-            append(invoiceLog, 'Add OK (id)', id)
-        } catch (e) {
-            append(invoiceLog, 'Add ERR', e)
-        }
-    }
-
-    async function getInvoice() {
-        append(invoiceLog, 'Get', await invoiceRepo.get(ids.invoiceId))
-    }
-
-    async function getAllInvoices() {
-        append(invoiceLog, 'GetAll', await invoiceRepo.getAll())
-    }
-
-    async function updateInvoice() {
-        append(invoiceLog, 'Update rows', await invoiceRepo.update(ids.invoiceId, { terms: 'Net 30' }))
-    }
-
-    async function deleteInvoice() {
-        await invoiceRepo.delete(ids.invoiceId)
-        append(invoiceLog, 'Delete OK', ids.invoiceId)
-    }
-
-    async function getInvoicesByCustomer() {
-        append(invoiceLog, 'ByCustomer', await invoiceRepo.getByCustomer(ids.customerId))
-    }
-
-    // ----------------------------
-    // Item Tests
-    // ----------------------------
-    const itemLog = ref('')
-
-    async function addItem() {
-        try {
-            // Ensure we have invoice
-            if (!ids.invoiceId) await addInvoice()
-            const id = await itemRepo.add({
-                invoiceId: ids.invoiceId,
-                name: 'Design Work',
-                unitType: 'Fixed',
-                quantity: 1,
-                rate: 500,
-                tax: 10,
-                taxName: 'GST'
-            })
-            ids.itemId = id
-            append(itemLog, 'Add OK (id)', id)
-        } catch (e) {
-            append(itemLog, 'Add ERR', e)
-        }
-    }
-
-    async function getItem() {
-        append(itemLog, 'Get', await itemRepo.get(ids.itemId))
-    }
-
-    async function getAllItems() {
-        append(itemLog, 'GetAll', await itemRepo.getAll())
-    }
-
-    async function updateItem() {
-        append(itemLog, 'Update rows', await itemRepo.update(ids.itemId, { quantity: 2 }))
-    }
-
-    async function deleteItem() {
-        await itemRepo.delete(ids.itemId)
-        append(itemLog, 'Delete OK', ids.itemId)
-    }
-
-    async function getItemsByInvoice() {
-        append(itemLog, 'ByInvoice', await itemRepo.getByInvoice(ids.invoiceId))
-    }
-
-    // ----------------------------
-    // TaxItem Tests
-    // ----------------------------
-    const taxLog = ref('')
-
-    async function addTaxItem() {
-        try {
-            const id = await taxItemRepo.add({ name: 'GST', rate: 10 })
-            ids.taxItemId = id
-            append(taxLog, 'Add OK (id)', id)
-        } catch (e) {
-            append(taxLog, 'Add ERR', e)
-        }
-    }
-
-    async function getTaxItem() {
-        append(taxLog, 'Get', await taxItemRepo.get(ids.taxItemId))
-    }
-
-    async function getAllTaxItems() {
-        append(taxLog, 'GetAll', await taxItemRepo.getAll())
-    }
-
-    async function updateTaxItem() {
-        append(taxLog, 'Update rows', await taxItemRepo.update(ids.taxItemId, { rate: 15 }))
-    }
-
-    async function deleteTaxItem() {
-        await taxItemRepo.delete(ids.taxItemId)
-        append(taxLog, 'Delete OK', ids.taxItemId)
-    }
-
-    async function findTaxByName() {
-        append(taxLog, 'FindByName', await taxItemRepo.findByName('GST'))
+    const seedItems = async () => {
+        await itemRepo.addDemoItems()
+        await loadAllItems()
     }
 </script>
-
-<style scoped>
-    pre {
-        white-space: pre-wrap;
-    }
-</style>

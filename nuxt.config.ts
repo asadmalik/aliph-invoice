@@ -26,6 +26,8 @@ export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4
   },
-
+  plugins: [
+    { src: '~/plugins/dexie.client.ts', mode: 'client' }
+  ],
   compatibilityDate: '2024-11-27'
 })

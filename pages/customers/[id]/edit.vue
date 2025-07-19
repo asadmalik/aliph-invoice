@@ -1,99 +1,130 @@
 <template>
-  <UContainer as="div" class="flex flex-col gap-6">
-    <h1 class="text-2xl font-semibold mb-6">Edit Customer</h1>
-
-    <UForm :state="form" @submit="handleSubmit">
-      <div class="grid gap-4">
-        <UInput v-model="form.name" label="Name" placeholder="John Doe" required />
-        <UInput v-model="form.phone" label="Phone" placeholder="+1 555‑555‑5555" />
-        <UInput v-model="form.email" label="Email" placeholder="john@example.com" type="email" />
-        <UTextarea v-model="form.address" label="Address" placeholder="123 Main St, City, Country" />
-        <UInput v-model="form.companyName" label="Company Name" placeholder="Acme Inc." />
-
-        <!-- Image picker -->
-        <div>
-          <label class="block text-sm font-medium mb-1">Image</label>
-          <input type="file" accept="image/*"
-            class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary-600 file:text-white hover:file:bg-primary-700;"
-            @change="onFileChange">
-          <img v-if="form.image" :src="form.image" alt="Preview" class="mt-2 h-24 w-24 object-cover rounded">
+  <UContainer class="max-w-4xl py-10">
+    <UCard>
+      <template #header>
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold">Edit Customer</h2>
         </div>
+      </template>
 
-        <!-- Currency select -->
-        <USelect v-model="form.currency" :items="currencies" option-attribute="label" value-attribute="value"
-          label="Currency" placeholder="Select currency" />
+      <UForm :state="form" class="grid grid-cols-1 md:grid-cols-2 gap-10" @submit="handleSubmit">
+        <UFormField label="Customer Name" hint="Required">
+          <UInput v-model="form.name" placeholder="e.g. Acme Corporation" class="w-full" />
+        </UFormField>
 
-        <UButton type="submit" class="mt-4">Update Customer</UButton>
-      </div>
-    </UForm>
+        <UFormField label="Company Name" hint="Optional">
+          <UInput v-model="form.companyName" placeholder="e.g. Acme Corp Ltd." class="w-full" />
+        </UFormField>
 
-    <UAlert v-if="saved" color="primary" variant="subtle" class="mt-4">
+        <UFormField label="Email" required>
+          <UInput v-model="form.email" placeholder="e.g. billing@acme.com" type="email" class="w-full" />
+        </UFormField>
+
+        <UFormField label="Phone">
+          <UInput v-model="form.phone" placeholder="e.g. +92 300 1234567" class="w-full" />
+        </UFormField>
+
+        <UFormField label="NTN / CNIC" required>
+          <UInput v-model="form.ntnCnic" placeholder="e.g. 12345-6789012-3" class="w-full" />
+        </UFormField>
+
+        <UFormField label="Province" required>
+          <USelect
+v-model="form.provinceCode" :items="provinceOptions" value-key="provinceId" label-key="provinceName"
+            placeholder="Select Province" class="w-full" />
+        </UFormField>
+
+        <UFormField label="Registration Type" required>
+          <USelect
+v-model="form.registrationType" :items="registrationTypes" placeholder="e.g. Filer, Unregistered"
+            class="w-full" />
+        </UFormField>
+
+        <UFormField label="Currency">
+          <UInput v-model="form.currency" placeholder="e.g. PKR" class="w-full" />
+        </UFormField>
+
+        <UFormField label="Address" class="md:col-span-2">
+          <UTextarea v-model="form.address" :rows="2" placeholder="e.g. 42/A Gulberg III, Lahore" class="w-full" />
+        </UFormField>
+
+        <div class="md:col-span-2 flex justify-end mt-4">
+          <UButton type="submit" color="primary" size="lg" icon="i-heroicons-check-circle">
+            Update Customer
+          </UButton>
+        </div>
+      </UForm>
+    </UCard>
+
+    <UAlert v-if="updated" color="green" variant="soft" class="mt-6" icon="i-heroicons-check-circle">
       Customer updated successfully!
+    </UAlert>
+
+    <UAlert v-if="notFound" color="red" variant="subtle" class="mt-6" icon="i-heroicons-exclamation-triangle">
+      Customer not found.
     </UAlert>
   </UContainer>
 </template>
 
 <script setup lang="ts">
+ 
+import { provinceRepo } from '@/DataLayer/repositories/ReferenceRepos'
+import type { ICustomer } from '@/DataLayer/types'
 
-  //import { customerRepo } from '@/DataLayer/repositories/CustomerRepository'
-  import { useCustomerRepo } from '@/composables/useRepos'
-  import type { ICustomer } from '@/DataLayer/types'
-
-
-  interface EditableCustomer extends ICustomer {
-    image?: string
-  }
+  definePageMeta({ layout: 'default' })
 
   const route = useRoute()
   const router = useRouter()
   const id = Number(route.params.id)
 
-  const customerRepo = useCustomerRepo();
+  const updated = ref(false)
+  const notFound = ref(false)
 
-  const form = reactive<EditableCustomer>({
+  const provinceOptions = ref<{ provinceId: string; provinceName: string }[]>([])
+  const registrationTypes = [
+    'Filer',
+    'nonFiler',
+    'Exempt',
+    'Unregistered',
+    'Registered',
+    'Other'
+  ]
+
+  const form = reactive<Omit<ICustomer, 'created_at' | 'created_by' | 'updated_at' | 'updated_by'>>({
+    id: id,
     name: '',
     phone: '',
     email: '',
     address: '',
     companyName: '',
-    image: '',
-    currency: ''
+    currency: '',
+    ntnCnic: '',
+    provinceCode: '',
+    registrationType: 'Unregistered'
   })
 
-  const saved = ref(false)
-
-  const currencies = ref([
-    { label: 'US Dollar (USD)', value: 'USD' },
-    { label: 'Euro (EUR)', value: 'EUR' },
-    { label: 'British Pound (GBP)', value: 'GBP' },
-    { label: 'Japanese Yen (JPY)', value: 'JPY' },
-    { label: 'Pakistani Rupee (PKR)', value: 'PKR' },
-    { label: 'Indian Rupee (INR)', value: 'INR' }
-  ])
-
   onMounted(async () => {
-    const existing = await customerRepo.get(id)
-    if (!existing) {
-      // If customer not found, redirect back to list
-      return router.push('/customers')
+    if (!import.meta.client) return
+
+    provinceOptions.value = await provinceRepo.getAll()
+
+    const customer = await useCustomerRepo().get(id)
+    if (!customer) {
+      notFound.value = true
+      return
     }
-    Object.assign(form, existing)
+
+    Object.assign(form, customer)
   })
 
   const handleSubmit = async () => {
-    await customerRepo.update(id, { ...form })
-    saved.value = true
-    setTimeout(() => (saved.value = false), 3000)
-  }
+    await useCustomerRepo().update(id, {
+      ...form,
+      updated_at: new Date().toISOString(),
+      updated_by: 'demo-user-id'
+    })
 
-  const onFileChange = (e: Event) => {
-    const files = (e.target as HTMLInputElement).files
-    if (files && files[0]) {
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        form.image = ev.target?.result as string
-      }
-      reader.readAsDataURL(files[0])
-    }
+    updated.value = true
+    setTimeout(() => (updated.value = false), 3000)
   }
 </script>

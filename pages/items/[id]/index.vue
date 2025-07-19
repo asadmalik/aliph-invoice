@@ -8,10 +8,54 @@
       Back to Items
     </NuxtLink>
 
-    <!-- Item Details Card -->
+    <!-- Primary Item Info Card (name + edit) -->
+    <UCard v-if="item">
+      <template #header>
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-gray-800">
+            {{ item.name }}
+          </h2>
+          <UButton icon="i-heroicons-pencil-square" size="sm" color="gray" variant="ghost"
+            :to="`/items/${item.id}/edit`" title="Edit Item" />
+        </div>
+      </template>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 text-sm text-gray-700">
+        <div>
+          <div class="text-muted text-xs uppercase tracking-wide">HS Code</div>
+          <div class="font-medium">{{ item.hsCode || '—' }}</div>
+        </div>
+        <div>
+          <div class="text-muted text-xs uppercase tracking-wide">UOM Code</div>
+          <div class="font-medium">{{ item.uomCode || '—' }}</div>
+        </div>
+        <div>
+          <div class="text-muted text-xs uppercase tracking-wide">Description</div>
+          <div class="font-medium">
+            {{ item.description || 'No description provided.' }}
+          </div>
+        </div>
+        <div>
+          <div class="text-muted text-xs uppercase tracking-wide">Location</div>
+          <div class="font-medium">{{ item.location || '—' }}</div>
+        </div>
+        <div>
+          <div class="text-muted text-xs uppercase tracking-wide">FBR Sale Type</div>
+          <div class="font-medium">{{ item.fbrSaleType || '—' }}</div>
+        </div>
+        <div>
+          <div class="text-muted text-xs uppercase tracking-wide">Sales Tax Rate</div>
+          <div class="font-medium">
+            {{ item.defaultSalesTaxRate?.toFixed(2) ?? '0.00' }}%
+          </div>
+        </div>
+      </div>
+    </UCard>
+
+    <!-- Summary Stats Card -->
     <UCard v-if="item" :ui="{ body: 'space-y-4' }">
       <template #header>
-        <h2 class="text-xl font-semibold">{{ item.name }}</h2>
+        <h3 class="text-base font-semibold">Sales Summary</h3>
       </template>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -29,6 +73,7 @@
       </div>
     </UCard>
 
+
     <!-- Invoices Table -->
     <div v-if="invoiceRows.length" class="overflow-x-auto">
       <h3 class="text-lg font-semibold mb-4">Appears in {{ invoiceRows.length }} Invoice<span
@@ -44,40 +89,38 @@
 </template>
 
 <script setup lang="ts">
-  import { useRoute } from '#imports'
-  import { invoiceRepo } from '@/DataLayer/repositories/InvoiceRepository'
-  import { itemRepo } from '@/DataLayer/repositories/ItemRepository'
-  import type { IInvoice, IItem } from '@/DataLayer/types'
-  import { computed, ref } from 'vue'
+ 
+import type { IInvoice, IItem } from '@/DataLayer/types'
 
   const route = useRoute()
   const id = Number(route.params.id)
 
-  const item = ref<IItem | undefined>()
+  const item = ref<IItem | null>(null)
   const invoices = ref<IInvoice[]>([])
 
-  // ---------- Fetch data ----------
-  const loadData = async () => {
-    item.value = await itemRepo.get(id)
-    invoices.value = await invoiceRepo.getAll()
-  }
+  const loading = ref(true)
 
-  await loadData()
+  onMounted(async () => {
+    if (!import.meta.client) return
+    const itemData = await useItemRepo().get(id)
+    const invoiceData = await useInvoiceRepo().getByHsCode(item.value?.hsCode ?? '')
 
-  // ---------- Derived ----------
-  /**
-   * Flatten matched line items with their parent invoice for table rows.
-   */
+    item.value = itemData ?? null
+    invoices.value = invoiceData ?? []
+    loading.value = false
+  })
+
   const invoiceRows = computed(() => {
+    if (!item.value) return []
     const rows: any[] = []
     invoices.value.forEach((inv) => {
       inv.items.forEach((line) => {
-        if (line.id === id) {
+        if (line.item === item.value?.name) {
           rows.push({
             invoiceNumber: inv.invoiceNumber,
             invoiceDate: inv.invoiceDate,
-            quantity: line.quantity,
-            lineTotal: line.quantity * line.rate,
+            quantity: line.qty,
+            lineTotal: line.qty * line.rate,
             id: inv.id,
           })
         }
@@ -86,28 +129,32 @@
     return rows
   })
 
-  const totalSold = computed(() => invoiceRows.value.reduce((sum, r) => sum + r.lineTotal, 0))
+  const totalSold = computed(() =>
+    invoiceRows.value.reduce((sum, r) => sum + r.lineTotal, 0)
+  )
 
   const invoiceColumns = [
     {
       accessorKey: 'invoiceNumber',
-      label: 'Invoice #',
-      cell: (cell: any) =>
-        h(
-          resolveComponent('NuxtLink'),
-          { to: `/invoice/${cell.row.original.id}` },
-          { default: () => cell.getValue() }
+      header: 'Invoice #',
+      cell: ({ row }: any) =>
+        h(resolveComponent('NuxtLink'), { to: `/invoice/${row.original.id}` }, () =>
+          row.getValue('invoiceNumber')
         ),
     },
-    { accessorKey: 'invoiceDate', label: 'Date' },
-    { accessorKey: 'quantity', label: 'Qty' },
+    { accessorKey: 'invoiceDate', header: 'Date' },
+    { accessorKey: 'quantity', header: 'Qty' },
     {
       accessorKey: 'lineTotal',
-      label: 'Line Total',
-      cell: (cell: any) =>
-        Number(cell.getValue()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      header: 'Line Total',
+      cell: ({ getValue }: any) =>
+        Number(getValue()).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }),
     },
   ]
 </script>
+
 
 <style scoped></style>

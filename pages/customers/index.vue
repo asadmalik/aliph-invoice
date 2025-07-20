@@ -20,7 +20,15 @@
 import type { ICustomer } from '@/DataLayer/types'
 import type { TableColumn } from '@nuxt/ui'
 
-  definePageMeta({ layout: 'default' })
+  definePageMeta({
+    layout: 'default',
+    title: 'All Customers'
+  })
+  useSeoMeta({
+    title: 'All Customers',
+    description: 'Manage your customers, view details, and edit information.'
+  })
+
 
   const router = useRouter()
   const customerRepo = useCustomerRepo()

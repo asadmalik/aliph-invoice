@@ -16,6 +16,10 @@
     title: pageTitle,
     layout: 'default'
   })
+  useSeoMeta({
+    title: pageTitle,
+    description: `Manage your ${pageTitle.value.toLowerCase()}s, view details, and edit information.`
+  })
 
   // — Route & Doc-Type Mapping (Nuxt auto-imports useRoute) —
 /*   const docType = useRoute().params.docType as 'sale' | 'purchase' | 'credit' || 'sale'

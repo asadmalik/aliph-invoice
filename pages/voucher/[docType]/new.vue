@@ -145,6 +145,25 @@ v-if="invoice.status === 'draft'" color="primary" :loading="isSaving" :disabled=
 import { useCustomerRepo, useInvoiceRepo, useProvinceRepo, useTransactionTypeRepo } from '@/composables/useRepos'
 import CustomerSelect from '~/components/ui/CustomerSelect.vue'
 import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue'
+
+    // — Page Title & Meta —
+    const pageTitle = computed(() => {
+        const docType = useRoute().params.docType as 'sale' | 'purchase' | 'credit' || 'sale'
+        return docType === 'credit' ? 'Credit Note' : `${docType.charAt(0).toUpperCase() + docType.slice(1)} Invoice`
+    })
+
+    definePageMeta({
+        layout: 'default',
+        title: 'New ' + pageTitle.value
+    })
+
+    useSeoMeta({
+        title: 'New ' + pageTitle.value,
+        description: 'Create a new invoice with customer details, items, and totals.'
+    })
+
+
+
     interface SelectOption<V = string> {
         label: string
         value: V
@@ -158,11 +177,7 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue'
         ntnCnic: '12345-6789012-3' // Example NTN/CNIC
     }
 
-    // — Page Title & Meta —
-    const pageTitle = computed(() => {
-        const docType = useRoute().params.docType as 'sale' | 'purchase' | 'credit' || 'sale'
-        return docType === 'credit' ? 'Credit Note' : `${docType.charAt(0).toUpperCase() + docType.slice(1)} Invoice`
-    })
+    
 
 
 

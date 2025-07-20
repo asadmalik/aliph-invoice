@@ -64,7 +64,14 @@ v-model="form.registrationType" :items="registrationTypes" value-key=""
 import { provinceRepo } from '@/DataLayer/repositories/ReferenceRepos'
 import type { ICustomer } from '@/DataLayer/types'
 
-  definePageMeta({ layout: 'default' })
+  definePageMeta({
+    layout: 'default',
+    title: 'Add New Customer'
+  })
+  useSeoMeta({
+    title: 'Add New Customer',
+    description: 'Create a new customer with details like name, contact, and address.'
+  })
 
   const saved = ref(false)
 
@@ -98,6 +105,14 @@ import type { ICustomer } from '@/DataLayer/types'
   })
 
   const handleSubmit = async () => {
+
+    // Check for empty fields
+    if (!form.name || !form.ntnCnic || !form.provinceCode) {
+      alert('Please fill in all required fields.')
+      return
+    }
+
+
     await useCustomerRepo().add({
       ...form,
       created_at: new Date().toISOString(),

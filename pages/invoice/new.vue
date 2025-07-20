@@ -85,6 +85,16 @@ import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue'
 import CustomerSelect from '~/components/ui/CustomerSelect.vue'
 import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue'
 
+  definePageMeta({
+    layout: 'default',
+    title: 'New Invoice'
+  })
+  useSeoMeta({
+    title: 'New Invoice',
+    description: 'Create a new invoice with customer details, items, and totals.'
+  })
+  
+
   const isClient = import.meta.client
   const repo = isClient ? useInvoiceRepo() : null
 

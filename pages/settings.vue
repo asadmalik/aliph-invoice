@@ -34,14 +34,15 @@ definePageMeta({
         <div class="flex flex-row gap-5">
           <UButton
 :disabled="itemCount>5" :color="itemCount > 0 ? 'primary' : 'neutral'"
-            @click="itemRepo.addDemoItems()">Add Demo Items</UButton>
+            icon="i-heroicons-numbered-list-solid" @click="itemRepo.addDemoItems()">Add Demo Items</UButton>
           <UButton
 :disabled="customerCount > 5" :color="customerCount > 0 ? 'primary' : 'neutral'"
-            @click="customerRepo.addDemoCustomers()">Add Demo Customers</UButton>
+            icon="i-heroicons-users" @click="customerRepo.addDemoCustomers()">Add Demo Customers</UButton>
 
-            <UButton color="error" icon="heroicons:exclamation-triangle-20-solid" disabled>Flush Database</UButton>
+          <UButton color="error" icon="heroicons:exclamation-triangle-20-solid" disabled>Flush Database</UButton>
         </div>
-        <p class="text-gray-500 dark:text-gray-400">Demo data can be added only if there are no existing items or customers.</p>
+        <p class="text-gray-500 dark:text-gray-400">Demo data can be added only if there are no existing items or
+          customers.</p>
       </div>
 
       <p class="text-gray-500 dark:text-gray-400">Rest is Coming soon…</p>

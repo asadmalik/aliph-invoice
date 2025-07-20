@@ -71,10 +71,17 @@ v-model="form.registrationType" :items="registrationTypes" placeholder="e.g. Fil
 import { provinceRepo } from '@/DataLayer/repositories/ReferenceRepos'
 import type { ICustomer } from '@/DataLayer/types'
 
-  definePageMeta({ layout: 'default' })
+  definePageMeta({
+    layout: 'default',
+    title: 'Edit Customer'
+  })
+  useSeoMeta({
+    title: 'Edit Customer',
+    description: 'Update customer details like name, contact, and address.'
+  })
+
 
   const route = useRoute()
-  const router = useRouter()
   const id = Number(route.params.id)
 
   const updated = ref(false)

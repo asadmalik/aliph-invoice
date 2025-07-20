@@ -90,7 +90,17 @@
 
 <script setup lang="ts">
  
-import type { IInvoice, IItem } from '@/DataLayer/types'
+  import type { IInvoice, IItem } from '@/DataLayer/types'
+
+
+  definePageMeta({
+    layout: 'default',
+    title: 'Item Details'
+  })
+  useSeoMeta({
+    title: 'Item Details',
+    description: 'View detailed information about the item including sales history.'
+  })
 
   const route = useRoute()
   const id = Number(route.params.id)

@@ -73,10 +73,19 @@ v-model.number="form.defaultSalesTaxRate" type="number" step="0.01"
 
     import type { IItem } from '@/DataLayer/types'
 
-    definePageMeta({ layout: 'default' })
+    definePageMeta({
+        layout: 'default',
+        title: 'Edit Item'
+    })
+
+    useSeoMeta({
+        title: 'Edit Item',
+        description: 'Modify item details such as name, HS code, rate, and more.'
+    })
+
 
     const route = useRoute()
-    const router = useRouter()
+    //const router = useRouter()
     const itemRepo = useItemRepo()
 
     const updated = ref(false)

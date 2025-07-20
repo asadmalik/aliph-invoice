@@ -88,7 +88,14 @@ v-model.number="form.defaultSalesTaxRate" type="number" step="0.01" placeholder=
 import type { IItem } from '@/DataLayer/types'
 
 
-    definePageMeta({ layout: 'default' })
+    definePageMeta({
+        layout: 'default',
+        title: 'Add New Item'
+    })
+    useSeoMeta({
+        title: 'Add New Item',
+        description: 'Create a new item with details like name, HS code, rate, and more.'
+    })
 
     const saved = ref(false)
 
@@ -117,6 +124,13 @@ import type { IItem } from '@/DataLayer/types'
     })
 
     const handleSubmit = async () => {
+//check for empty fields
+        if (!form.name || !form.rate || !form.unitType || !form.fbrSaleType) {
+            alert('Please fill in all required fields.')
+            return
+        }   
+
+
         await useItemRepo().add({
             ...form,
             createdAt: new Date().toISOString(),

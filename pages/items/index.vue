@@ -57,14 +57,25 @@
 </template>
 
 <script setup lang="ts">
-  
+
 import { UButton } from '#components'
 import type { IItem } from '@/DataLayer/types'
 
 import type { TableColumn } from '@nuxt/ui'
 import { h } from 'vue'
 
-  definePageMeta({ layout: 'default' })
+
+  
+definePageMeta({
+  layout: 'default',
+  title: 'All Items'
+})
+useSeoMeta({
+  title: 'All Items',
+  description: 'Manage your items efficiently with our comprehensive item management system.'
+})
+
+
 
   const router = useRouter()
 

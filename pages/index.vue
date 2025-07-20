@@ -45,7 +45,7 @@ v-model="selectedCustomer" :items="customers" placeholder="Search or Select Cust
         </UButton>
       </template>
     </UCard>
-<div>&nbsp;</div>
+<div class="hidden lg:block">&nbsp;</div>
     <UCard
 v-for="card in cards" :key="card.to" :ui="{ root: 'flex flex-col gap-4' } "
       class="hover:shadow-lg transition">
@@ -68,7 +68,13 @@ import type { ICustomer, IItem } from '~/DataLayer/types';
 
 
   definePageMeta({
-    layout: 'default'
+    layout: 'default',
+    title: 'Dashboard'
+  })
+
+  useSeoMeta({
+    title: 'Dashboard',
+    description: 'Manage your invoices, items, and customers efficiently.'
   })
 
   //const search = ref('');

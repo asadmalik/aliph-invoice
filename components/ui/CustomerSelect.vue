@@ -24,6 +24,17 @@ class="group" label="Show Details" color="secondary" variant="link" trailing-ico
         <!-- Chips: email, phone, etc. -->
         <div class="flex flex-wrap gap-2 mt-3 px-4 pb-3">
           <UBadge size="sm" variant="outline" class="flex items-center gap-1">
+            <UIcon name="lucide:check-check" class="size-4" />
+            <span class="truncate max-w-xs">{{ selectedCustomer.registrationType || 'not registered' }}</span>
+          </UBadge>
+
+          <UBadge size="sm" variant="outline" class="flex items-center gap-1">
+            <UIcon name="i-lucide-id-card" class="size-4" />
+            <span>CNIC/NTN: {{ selectedCustomer.ntnCnic || '—' }}</span> 
+          </UBadge>
+
+
+          <UBadge size="sm" variant="outline" class="flex items-center gap-1">
             <UIcon name="i-lucide-mail" class="size-4" />
             <span class="truncate max-w-xs">{{ selectedCustomer.email || '—' }}</span>
           </UBadge>
@@ -40,7 +51,7 @@ class="group" label="Show Details" color="secondary" variant="link" trailing-ico
 
           <UBadge size="sm" variant="outline" class="flex items-center gap-1">
             <UIcon name="i-lucide-dollar-sign" class="size-4" />
-            <span>{{ selectedCustomer.currency || '—' }}</span>
+            <span>{{ selectedCustomer.currency || 'PKR' }}</span>
           </UBadge>
         </div>
       </template>

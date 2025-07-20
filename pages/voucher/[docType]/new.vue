@@ -6,9 +6,9 @@
             <UText tag="h1" class="text-2xl font-bold">{{ pageTitle }}</UText>
             <UBadge
 :color="{
-                draft: 'gray',
-                validated: 'blue',
-                posted: 'green',
+                draft: 'neutral',
+                validated: 'primary',
+                posted: 'success',
                 error: 'error'
             }[invoice.status]" class="uppercase px-3 py-1 rounded">
                 {{ invoice.status }}
@@ -22,7 +22,7 @@
                 <UFormField label="Seller Name">
                     <UInput v-model="companyProfile.businessName" readonly />
                 </UFormField>
-                <UFormField label="Seller Province">
+                <!-- <UFormField label="Seller Province">
                     <USelect v-model="invoice.sellerProvinceId" :items="provinceOptions" disabled />
                 </UFormField>
                 <UFormField label="Seller Address">
@@ -30,7 +30,7 @@
                 </UFormField>
                 <UFormField label="Seller NTN/CNIC">
                     <UInput v-model="companyProfile.ntnCnic" readonly />
-                </UFormField>
+                </UFormField> -->
             </div>
 
             <!-- Buyer (select & editable) -->
@@ -41,7 +41,7 @@
                         <p v-if="errors.customer" class="text-red-600 text-sm">{{ errors.customer }}</p>
                     </template>
                 </UFormField>
-                <UFormField label="Buyer Province">
+                <!-- <UFormField label="Buyer Province">
                     <USelect v-model="invoice.buyerProvinceCode" :items="provinceOptions" />
                 </UFormField>
                 <UFormField label="Buyer Address">
@@ -52,7 +52,7 @@
                 </UFormField>
                 <UFormField label="Registration Type">
                     <USelect v-model="invoice.buyerRegistrationType" :items="registrationTypeOptions" />
-                </UFormField>
+                </UFormField> -->
             </div>
         </div>
 
@@ -154,6 +154,9 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue'
 
     definePageMeta({
         layout: 'default',
+        title: 'New Invoice'
+    })
+    useHead({
         title: 'New ' + pageTitle.value
     })
 
@@ -314,6 +317,8 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue'
     // Sync items from child table
     function syncItems(rows: IInvoiceItem[]) {
         invoice.items = rows
+
+        console.log('🔄 Invoice items synced:', invoice.items)
     }
 
     // Auto-set due date when date or terms change

@@ -12,7 +12,7 @@
         <div> Search</div>
         <USelectMenu
 v-model="selectedItem" :items="items" placeholder="Search or Select an item" class="w-full"
-          size="lg" option-attribute="name" @update:model-value="itemSelected"/>
+          size="lg" option-attribute="name" @update:model-value="itemSelected" />
       </div>
 
       <template #footer>
@@ -24,6 +24,28 @@ v-model="selectedItem" :items="items" placeholder="Search or Select an item" cla
     </UCard>
 
 
+    <UCard
+      :ui="{ root: ' hover:shadow-lg transition flex flex-col gap-4 space-between justify-between', header: 'flex items-center gap-2', footer: 'flex flex-row justify-between' }">
+      <template #header>
+        <UIcon name="i-heroicons-users" class="h-8 w-8 text-primary" />
+        <h1 class="text-lg font-semibold">Customers</h1>
+      </template>
+
+      <div class="h-full flex flex-col gap-2.5 justify-between flex-auto grow">
+        <div> Search</div>
+        <USelectMenu
+v-model="selectedCustomer" :items="customers" placeholder="Search or Select Customers"
+          class="w-full" size="lg" option-attribute="name" @update:model-value="customerSelected" />
+      </div>
+
+      <template #footer>
+        <UButton to="/customers/" color="primary" icon="i-heroicons-users">Manage Customers</UButton>
+        <UButton to="/customers/new" color="primary" icon="i-heroicons-plus">
+          Add New Item
+        </UButton>
+      </template>
+    </UCard>
+<div>&nbsp;</div>
     <UCard
 v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' } }"
       class="hover:shadow-lg transition">
@@ -42,6 +64,8 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
 </template>
 
 <script setup lang="ts">
+import type { ICustomer, IItem } from '~/DataLayer/types';
+
 
   definePageMeta({
     layout: 'default'
@@ -51,7 +75,8 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
 
   const voucherBase = (type: string) => `/voucher/${type}`
 
-  const items= ref([]);
+  const items = ref([]);
+  const customers = ref([]);
 
   const cards = [
     // Sale Invoices
@@ -102,28 +127,7 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
       to: `${voucherBase('credit')}`
     },
 
-    // Existing cards
-    {
-      title: 'Add a Customer',
-      description: 'Add a new customer record.',
-      icon: 'i-heroicons-user-plus',
-      cta: 'New Customer',
-      to: '/customers/new'
-    },
-    {
-      title: 'Customers',
-      description: 'Manage your customer list.',
-      icon: 'i-heroicons-users',
-      cta: 'View Customers',
-      to: '/customers'
-    },
-    {
-      title: 'Inventory Items',
-      description: 'Manage your services and stock.',
-      icon: 'i-heroicons-numbered-list-solid',
-      cta: 'View Inventory',
-      to: '/items'
-    },
+   
     {
       title: 'Settings',
       description: 'Customize tax rates, company info and more.',
@@ -134,6 +138,7 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
   ]
 
   const selectedItem = ref<IItem | null>(null)
+  const selectedCustomer = ref<ICustomer | never | null>(null)
 
   const itemSelected = (item: IItem) => {
     console.log('Selected item:', item)
@@ -142,11 +147,25 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
     }
   }
 
+  const customerSelected = (customer: ICustomer) => {
+    console.log('Selected customer:', customer)
+    if (customer?.id) {
+      navigateTo(`/customers/${customer.id}`)
+    }
+  }
+
+
+
   onMounted(async () => {
     // Fetch items from the API
     items.value = await useItemRepo().getAll().then(items => items.map(item => ({
       label: item.name,
       id: item.id
-    })))
+    })));
+    // Fetch customers from the API
+    customers.value = await useCustomerRepo().getAll().then(customers => customers.map(customer => ({
+      label: customer.name,
+      id: customer.id
+    })));
   });
 </script>

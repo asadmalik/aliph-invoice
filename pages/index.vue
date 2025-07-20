@@ -10,7 +10,9 @@
 
       <div class="h-full flex flex-col gap-2.5 justify-between flex-auto grow">
         <div> Search</div>
-        <USelectMenu :items="items" class="w-full" size="lg" />
+        <USelectMenu
+v-model="selectedItem" :items="items" placeholder="Search or Select an item" class="w-full"
+          size="lg" option-attribute="name" @update:model-value="itemSelected"/>
       </div>
 
       <template #footer>
@@ -40,18 +42,16 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
 </template>
 
 <script setup lang="ts">
+
   definePageMeta({
     layout: 'default'
   })
 
-  const search = ref('');
+  //const search = ref('');
 
-  const base = (type: string) => `/voucher/${type}`
+  const voucherBase = (type: string) => `/voucher/${type}`
 
-  const items = ref(await useItemRepo().getAll().then(items => items.map(item => ({
-    label: item.name,
-    id: item.id
-  }))));
+  const items= ref([]);
 
   const cards = [
     // Sale Invoices
@@ -60,14 +60,14 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
       description: 'Generate a new sales invoice for a customer.',
       icon: 'i-heroicons-plus-circle',
       cta: 'New Sale',
-      to: `${base('sale')}/new`
+      to: `${voucherBase('sale')}/new`
     },
     {
       title: 'Sale Invoices',
       description: 'Browse and manage all sales invoices.',
       icon: 'i-heroicons-document-text',
       cta: 'View Sales',
-      to: `${base('sale')}`
+      to: `${voucherBase('sale')}`
     },
 
     // Purchase Invoices
@@ -76,14 +76,14 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
       description: 'Generate a new purchase invoice.',
       icon: 'i-heroicons-plus-circle',
       cta: 'New Purchase',
-      to: `${base('purchase')}/new`
+      to: `${voucherBase('purchase')}/new`
     },
     {
       title: 'Purchase Invoices',
       description: 'Browse and manage all purchase invoices.',
       icon: 'i-heroicons-document-text',
       cta: 'View Purchases',
-      to: `${base('purchase')}`
+      to: `${voucherBase('purchase')}`
     },
 
     // Credit Notes
@@ -92,14 +92,14 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
       description: 'Issue a credit note for a previous invoice.',
       icon: 'i-heroicons-plus-circle',
       cta: 'New Credit',
-      to: `${base('credit')}/new`
+      to: `${voucherBase('credit')}/new`
     },
     {
       title: 'Credit Notes',
       description: 'Browse and manage all credit notes.',
       icon: 'i-heroicons-document-text',
       cta: 'View Credits',
-      to: `${base('credit')}`
+      to: `${voucherBase('credit')}`
     },
 
     // Existing cards
@@ -132,4 +132,21 @@ v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' 
       to: '/settings'
     }
   ]
+
+  const selectedItem = ref<IItem | null>(null)
+
+  const itemSelected = (item: IItem) => {
+    console.log('Selected item:', item)
+    if (item?.id) {
+      navigateTo(`/items/${item.id}`)
+    }
+  }
+
+  onMounted(async () => {
+    // Fetch items from the API
+    items.value = await useItemRepo().getAll().then(items => items.map(item => ({
+      label: item.name,
+      id: item.id
+    })))
+  });
 </script>

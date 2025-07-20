@@ -5,7 +5,7 @@
       :ui="{root:'hover:shadow-lg transition flex flex-col gap-4 space-between justify-between', header:'flex items-center gap-2', footer:'flex flex-row justify-between'}">
       <template #header>
         <UIcon name="i-heroicons-numbered-list-solid" class="h-8 w-8 text-primary" />
-        <h1 class="text-lg font-semibold">Items</h1>
+        <h1 class="text-lg font-semibold">Items ({{ items.length }})</h1>
       </template>
 
       <div class="h-full flex flex-col gap-2.5 justify-between flex-auto grow">
@@ -28,7 +28,7 @@ v-model="selectedItem" :items="items" placeholder="Search or Select an item" cla
       :ui="{ root: ' hover:shadow-lg transition flex flex-col gap-4 space-between justify-between', header: 'flex items-center gap-2', footer: 'flex flex-row justify-between' }">
       <template #header>
         <UIcon name="i-heroicons-users" class="h-8 w-8 text-primary" />
-        <h1 class="text-lg font-semibold">Customers</h1>
+        <h1 class="text-lg font-semibold">Customers ({{ customers.length }})</h1>
       </template>
 
       <div class="h-full flex flex-col gap-2.5 justify-between flex-auto grow">
@@ -47,7 +47,7 @@ v-model="selectedCustomer" :items="customers" placeholder="Search or Select Cust
     </UCard>
 <div>&nbsp;</div>
     <UCard
-v-for="card in cards" :key="card.to" :ui="{ body: { base: 'flex flex-col gap-4' } }"
+v-for="card in cards" :key="card.to" :ui="{ root: 'flex flex-col gap-4' } "
       class="hover:shadow-lg transition">
       <template #header>
         <UIcon :name="card.icon" class="h-8 w-8 text-primary" />

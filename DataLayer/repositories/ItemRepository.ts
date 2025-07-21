@@ -55,7 +55,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 updatedAt: null,
                 updatedBy: null,
                 unitType: 'UOM',
-                rate: 3000
+                rate: 300
             },
             {
                 name: 'Refined Sugar',
@@ -69,7 +69,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 createdBy: '660e8400-e29b-41d4-a716-446655440001',
                 updatedAt: null,
                 updatedBy: null, unitType: 'UOM',
-                rate: 3000
+                rate: 275
             },
             {
                 name: 'Packaged Drinking Water',
@@ -83,7 +83,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 createdBy: '770e8400-e29b-41d4-a716-446655440002',
                 updatedAt: null,
                 updatedBy: null, unitType: 'UOM',
-                rate: 3000
+                rate: 178
             },
             {
                 name: 'Mobile Handset Model X',
@@ -97,7 +97,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 createdBy: '880e8400-e29b-41d4-a716-446655440003',
                 updatedAt: null,
                 updatedBy: null, unitType: 'UOM',
-                rate: 3000
+                rate: 28500
             },
             {
                 name: 'Electricity Supply Service',
@@ -111,7 +111,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 createdBy: '990e8400-e29b-41d4-a716-446655440004',
                 updatedAt: null,
                 updatedBy: null, unitType: 'UOM',
-                rate: 3000
+                rate: 115890
             },
             {
                 name: 'Diesel Engine Oil',
@@ -125,7 +125,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 createdBy: '550e8400-e29b-41d4-a716-446655440000',
                 updatedAt: null,
                 updatedBy: null, unitType: 'UOM',
-                rate: 3000
+                rate: 59000
             },
             {
                 name: 'T-Shirt Cotton',
@@ -140,7 +140,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 updatedAt: null,
                 updatedBy: null,
                 unitType: 'UOM',
-                rate: 3000
+                rate: 585
             },
             {
                 name: 'Office Chair',
@@ -155,7 +155,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 updatedAt: null,
                 updatedBy: null,
                 unitType: 'UOM',
-                rate: 3000
+                rate: 3200
             },
             {
                 name: 'Pharmaceutical Tablets',
@@ -170,7 +170,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 updatedAt: null,
                 updatedBy: null,
                 unitType: 'UOM',
-                rate: 3000
+                rate: 300
             },
             {
                 name: 'Printed Circuit Boards',
@@ -185,7 +185,7 @@ export class ItemRepository extends BaseRepository<IItem> {
                 updatedAt: null,
                 updatedBy: null,
                 unitType: 'UOM',
-                rate: 3000
+                rate: 4100
             }
         ];
         //await this.bulkAdd(demos)

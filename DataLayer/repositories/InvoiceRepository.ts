@@ -1,9 +1,10 @@
 /* File: DataLayer\repositories\InvoiceRepository.ts */
-import { db } from '../db'
-import type { IInvoice, IInvoiceItem, InvoiceHeader } from '../types'
-import { BaseRepository } from './BaseRepository'
+import { db } from '../db';
+import type { IInvoice, InvoiceHeader } from '../types';
+import { BaseRepository } from './BaseRepository';
 
 export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
+
     constructor() {
         super(db.invoices)  // table is header‑only
     }
@@ -12,7 +13,7 @@ export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
     Create invoice + line‑items in one Dexie transaction
     Returns new invoice ID
   ───────────────────────────────────────────────────────────*/
-    async addWithItems(invoice: IInvoice): Promise<number> {
+    /* async addWithItems(invoice: IInvoice): Promise<number> {
         const plain = structuredClone(invoice)         // strip proxies
         const { items, ...header } = plain
         if (items.length < 0) return 0;
@@ -29,6 +30,35 @@ export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
                 await db.invoiceItems.bulkAdd(rows)
             }
             return id
+        })
+    } */
+
+    async addWithItems(invoice: IInvoice): Promise<number | string | undefined> {
+        const raw = toRaw(invoice);
+        const data = JSON.parse(JSON.stringify(raw)) as IInvoice;
+        const { items, id: _, ...header } = data;
+        console.log('invoice repo, header:', header, items);
+
+        items?.forEach(r => delete r.id)
+
+        // return the numeric id from the transaction
+        return db.transaction('rw', db.invoices, db.invoiceItems, async () => {
+            let id: undefined | number | string;
+            try {
+                id = await db.invoices.add(header)
+            } catch (error) {
+                console.error('Error adding invoice header:', error);
+            }
+            
+            
+            if (items?.length) {
+                const rows = items.map(r => ({ ...r, invoiceId: id }))
+                await db.invoiceItems.bulkAdd(rows)
+            }
+            console.log('invoice repo, inv id:', id)
+
+            return id
+
         })
     }
 
@@ -89,6 +119,21 @@ export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
             const invItems = items.filter(i => i.invoiceId === inv.id)
             return { ...inv, items: invItems }
         })
+    }
+
+    async validateAndPost(invoiceId: number): Promise<void> {
+        const invoice = await this.getFull(invoiceId)
+        if (!invoice) throw new Error('Invoice not found')
+
+        // Perform validation checks here
+        if (invoice.items?.length === 0) {
+            throw new Error('Cannot post invoice with no items')
+        }
+
+        // Additional validation logic can be added here
+
+        // If all checks pass, mark as posted
+        //await db.invoices.update(invoiceId, { posted: true })
     }
 }
 

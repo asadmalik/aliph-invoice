@@ -1,12 +1,19 @@
-import type { IDIPostResponse, IDIValidateResponse, IInvoice } from "~/DataLayer/types"
+import type { IDIPostResponse, IDIValidateResponse, IInvoice } from "~/DataLayer/types";
 
 
 // uses Nuxt’s built-in $fetch
-export function validateInvoicePayload(payload: any) {
-    return $fetch<IDIValidateResponse>('/api/di/validateinvoicedata', {
+export async function validateInvoicePayload(payload: IInvoice) {
+
+    const diPayload = toDiPayload(payload);
+
+    const validationRespons = await $fetch<IDIValidateResponse>('/api/di/validateinvoicedata', {
         method: 'POST',
-        body: payload
+        body: diPayload
     })
+
+    console.log('DI validation response:', validationRespons);
+return validationRespons;
+    
 }
 
 export function postInvoicePayload(payload: any) {
@@ -37,10 +44,10 @@ export function toDiPayload(inv: IInvoice) {
         items: inv.items.map(row => ({
             hsCode: row.hsCode,
             productDescription: row.item,
-            quantity: row.qty,
+            quantity: row.quantity,
             uoM: row.uomCode,
-            valueSalesExcludingST: row.qty * row.rate,
-            salesTaxApplicable: row.tax,
+            valueSalesExcludingST: row.quantity * row.rate,
+            salesTaxApplicable: row.salesTaxApplicable,
             salesTaxWithheldAtSource: row.salesTaxWithheldAtSource ?? 0,
             extraTax: row.extraTax,
             furtherTax: row.furtherTax,
@@ -49,13 +56,13 @@ export function toDiPayload(inv: IInvoice) {
             fedPayable: row.fedPayable ?? 0,
             discount: row.lineDiscount ?? 0,
             totalValues:
-                row.qty * row.rate
-                + row.tax
+                row.quantity * row.rate
+                + (row.salesTaxApplicable ?? 0)
                 + (row.extraTax ?? 0)
                 + (row.furtherTax ?? 0)
                 + (row.fedPayable ?? 0)
                 - (row.lineDiscount ?? 0),
-            rate: `${row.taxRate ?? 0}%`  // if PRAL expects a string
+            rate: row.rate  
         }))
     }
 }

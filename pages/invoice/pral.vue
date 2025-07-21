@@ -378,7 +378,7 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue'
         try {
             await invoiceRepo.validateAndPost(invoice.id!)
             const updated = await invoiceRepo.get(invoice.id!)
-            invoice.status = updated?.status!
+            invoice.status = updated?.status
             invoice.fbrInvoiceNumber = updated?.fbrInvoiceNumber
             console.log('🚀 Posted to FBR, number:', invoice.fbrInvoiceNumber)
         } catch (e: any) {

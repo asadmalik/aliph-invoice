@@ -31,10 +31,10 @@
             <span>{{ row.uomCode }}</span>
           </td>
 
-          <!-- Quantity -->
+          <!-- quantity -->
           <td class="border px-2">
             <UInput
-v-model.number="row.qty" type="number" min="0" class="w-16 text-right"
+v-model.number="row.quantity" type="number" min="0" class="w-16 text-right"
               @update:model-value="() => onFieldChange(row)" />
           </td>
 
@@ -117,27 +117,23 @@ import { onMounted, ref } from 'vue';
   // Details open flags by row index
   const detailsOpen = ref<boolean[]>([])
 
-  // Helper: render UOM label
-  const getUomLabel = (code?: string) => {
-    const found = uomOptions.value.find(u => u.uomCode === code)
-    return found ? found.description : ''
-  }
+
 
   // Emit a deep copy of rows
   const plainRows = () => rows.value.map(r => ({ ...r }))
 
   // Recalculate computed fields and emit update
   function onFieldChange(row: IInvoiceItem) {
-    row.valueSalesExcludingST = (row.qty || 0) * row.rate
+    row.valueSalesExcludingST = (row.quantity || 0) * row.rate
     row.salesTaxApplicable = row.valueSalesExcludingST * (row.salesTaxRate / 100)
     row.totalValues =
       row.valueSalesExcludingST
       + row.salesTaxApplicable
-      - row.salesTaxWithheldAtSource
-      - row.lineDiscount
-      + row.extraTax
-      + row.furtherTax
-      + row.fedPayable
+      - row.salesTaxWithheldAtSource || 0
+      - row.lineDiscount || 0
+      + row.extraTax || 0
+      + row.furtherTax || 0
+      + row.fedPayable || 0
 
     console.log('onFieldChange →', JSON.parse(JSON.stringify(row)))
     emit('item-updated', plainRows())

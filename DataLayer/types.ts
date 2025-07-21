@@ -144,12 +144,11 @@ export interface IInvoiceItem {
 
     /** Human text – still useful on UI */
     item: string
-    qty: number
+    quantity: number
     rate: number          // excl. tax
-    /** Line-level sales tax amount */
-    tax: number
-    /** rate * qty + tax */
-    amount: number
+    
+    /**DEPRICATED: Use totalValues instead. //rate * qty + tax */
+    /* amount: number */
 
     /* ----- DI payload extras (computed or selected) ----- */
     /** HS code of the product */
@@ -172,61 +171,73 @@ export interface IInvoiceItem {
     totalValues?: number
 }
 
-export type InvoiceStatus = 'draft' | 'validated' | 'posted' | 'error'
+
 
 export interface IInvoice {
     id?: number
 
     /* ---------- Relationships ----------------------- */
     /** FK → customer.id (buyer) */
-    customerId: number
+    customerId: number                      //NON DI
     /** Convenience copy for lists */
-    customerName?: string
+    customerName?: string                   //DI
 
     /* ---------- Header fields ----------------------- */
-    invoiceNumber: string
-    invoiceDate: string       // YYYY-MM-DD
-    terms: string             // "Due On Receipt" / "Net 15" etc.
-    dueDate: string
-    billTo: string
-    currencyCode: string
+    invoiceNumber: string                   //RETURN DI
+    
+    invoiceVoucherType: 
+    'Sale Invoice' | 'Purchase Invoice' | 'Credit Note' | 'Debit Note' | string | null           // DI- MAP: invoviceType
+
+
+    invoiceDate: string                     //DI - YYYY-MM-DD 
+    terms: string                           //NON DI
+    dueDate: string                         //NON DI
+    billTo: string                          //NON DI
+    currencyCode: string                    //NON DI
 
     /* ----- Buyer extras (for DI payload) ---------- */
-    buyerAddress?: string
-    buyerNtnCnic?: string
-    buyerRegistrationType?: string
+    buyerAddress?: string                   //DI
+    buyerNtnCnic?: string                   //DI buyerNTNCNIC
+    buyerRegistrationType?: string          //DI
+    buyerProvinceCode?: string              //DI buyerProvince   
+
 
     /* ---------- DI header extras -------------------- */
     /** Numeric document type – 4 = Sale Invoice */
-    documentTypeId: number
+    documentTypeId: number                  //  DI - Map to: docTypeID
     /** Supply classification from API lookup */
-    transactionTypeId: number
+    transactionTypeId: number               //  NON DI
     /** SNO01…SNO28 chosen in UI */
-    scenarioId: string
+    scenarioId: string                      //  DI - Map to: scenarioId
     /** Derived sale-type string sent to SaleType→Rate */
     saleType?: string         /** AUTO **/
 
-    /** Seller & buyer provinces as DI wants them */
-    sellerProvinceCode?: string
-    buyerProvinceCode?: string
-
+    
+    
     /** Workflow status */
     status: InvoiceStatus
+
+
     /** Returned by /postinvoicedata on success */
     fbrInvoiceNumber?: string
 
-    sellerName: string
-    sellerAddress: string
-
+    sellerName?: string
+    sellerAddress?: string
+    sellerProvinceCode?: string
 
     /* ---------- Totals & extra ---------------------- */
-    items: IInvoiceItem[]
+    items?: IInvoiceItem[]
     notes?: string
     termsAndConditions?: string
     discount?: number
     shipping?: number
+
+    validation: ValidationResult 
+    
 }
 
+
+export type InvoiceStatus = 'draft' | 'validation_success' | 'validation_failure'
 /** For repos that only store the header */
 export type InvoiceHeader = Omit<IInvoice, 'items'>
 

@@ -1,107 +1,108 @@
 <template>
   <UCard
-flat class="mb-6 p-0" :ui="{ 
-    root:  'sm:p-0 ',      // remove padding from the outer wrapper 
-    body:  'sm:p-0 p-0',      // remove padding from the body container 
+flat class="mb-6 p-0" :ui="{
+    root: 'sm:p-0 ',      // remove padding from the outer wrapper 
+    body: 'sm:p-0 p-0',      // remove padding from the body container 
     footer: 'p-0'      // (if you need) remove padding from a footer slot 
   }">
     <div class="overflow-x-auto">
-      <table class="w-full table-auto">
-        <thead class="bg-gray-50 border-b">
-          <tr class="text-gray-600 text-center text-sm font-semibold uppercase">
-            <th class="px-2 py-1 w-6 ">#</th>
-            <th class="px-2 py-1">Product</th>
-            <th class="px-2 py-1 w-12">UOM</th>
-            <th class="px-2 py-1 w-20">Qty</th>
-            <th class="px-2 py-1 w-16">Unit<br>Rate</th>
-            <th class="px-2 py-1 w-20">Tax<br>Rate (%)</th>
-            <th class="px-2 py-1 w-20 text-right">Amount</th>
-            <th class="px-2 py-1 w-20">Actions</th>
+      <table class="w-full table-fixed">
+        <thead class="bg-gray-50 border-y border-blue-200">
+          <tr class="text-gray-600 text-left font-semibold uppercase text-xs">
+            <th class="px-2 py-1 w-6 border-r border-blue-200">#</th>
+            <th class="px-2 py-1 w-96 text-left text-sm border-r border-blue-200">Product</th>
+            <th class="px-2 py-1 w-16 border-r border-blue-200">Qty</th> <!-- reduced from w-16 -->
+            <th class="px-2 py-1 w-16 border-r border-blue-200">Rate</th>
+            <th class="px-2 py-1 w-16 border-r border-blue-200">Sales Tax</th>
+            <th class="px-2 py-1 w-24 text-right border-r border-blue-200">Amount</th>
+            <th class="px-2 py-1 w-16 text-right">Actions</th> <!-- reduced from w-16 -->
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 text-sm">
-          <tr
-            v-for="(row, idx) in rows"
-            :key="idx"
-           class="even:bg-blue-50 hover:bg-gray-100 transition-colors"
-          >
-            <td class="px-2 py-4">{{ idx + 1 }}</td>
-            <td class="px-2 py-4">
-              <UInputMenu
-                v-model="row.item"
-                :items="itemsOptions.map(i => ({ value: i.hsCode!, label: `${i.hsCode} — ${i.name}` }))"
-                placeholder="Search by code or name"
-                class="w-full"
-                @update:model-value="selection => onItemSelect(selection.value, row)"
-              />
-            </td>
-            <td class="px-2 py-4">{{ row.uomCode }}</td>
-            <td class="px-2 py-4">
-              <UInput
-                v-model.number="row.quantity"
-                type="number"
-                min="0"
-                class="w-20 text-right px-1 py-0.5"
-                @update:model-value="() => onFieldChange(row)"
-              />
-            </td>
-            <td class="px-2 py-1 text-right">{{ row.rate.toFixed(2) }}</td>
-            <td class="px-2 py-1 text-right">{{ row.salesTaxRate?.toFixed(2) }}</td>
-            <td class="px-2 py-1 text-right font-semibold">{{ row.totalValues?.toFixed(2) }}</td>
-            <td class="px-2 py-4">
-              <div class="flex items-center space-x-1 justify-end">
-                <UButton variant="link" size="xs" @click="toggleDetails(idx)">
-                  Details
-                </UButton>
+          <template v-for="(row, idx) in rows" :key="idx">
+            <tr class="even:bg-blue-50 hover:bg-gray-100 transition-colors">
+              <!-- Row number -->
+              <td class="px-2 py-4 align-middle text-center">{{ idx + 1 }}</td>
+
+              <!-- Product + UOM badge -->
+              <td class="px-2 py-4 align-middle w-full flex items-center gap-2">
+                <UInputMenu
+v-model="row.item"
+                  :items="itemsOptions.map(i => ({ value: i.hsCode!, label: `${i.hsCode} — ${i.name}` }))"
+                  placeholder="Search by code or name" class="flex-1"
+                  @update:model-value="selection => onItemSelect(selection.value, row)" />
+                <UBadge v-if="row.uomCode" variant="subtle">{{ row.uomCode }}</UBadge>
+              </td>
+
+              <!-- Qty -->
+              <td class="px-2 py-4 align-middle text-center">
+                <UInput
+v-model.number="row.quantity" variant="subtle" type="number" min="0" class="text-right"
+                  @update:model-value="() => onFieldChange(row)" />
+              </td>
+
+              <!-- Unit Rate -->
+              <td class="px-2 py-4 align-middle text-right">
+                {{ row.rate.toFixed(2) }}
+              </td>
+
+              <!-- Tax Rate -->
+              <td class="px-2 py-4 align-middle text-right">
+                {{ row.salesTaxRate?.toFixed(2) }}%
+              </td>
+
+              <!-- Amount -->
+              <td class="px-2 py-4 align-middle text-right font-semibold">
+                {{ row.totalValues?.toFixed(2) }}
+              </td>
+
+              <!-- Actions -->
+              <td class="px-2 py-4 align-middle flex items-center justify-end space-x-1 ">
                 <UButton
-                  icon="i-lucide-x"
-                  variant="ghost"
-                  size="xs"
-                  color="danger"
-                  @click="removeRow(idx)"
-                />
-              </div>
-            </td>
-          </tr>
+icon="lucide-chevron-down" variant="outline" size="xs" title="Show More Taxes"
+                  @click="row.showDetails = !row.showDetails" />
 
-          <!-- Details row stays the same but with compact padding -->
-          <tr v-for="(row, idx) in rows" :key="'details-' + idx">
-            <td
-              v-if="detailsOpen[idx]"
-              colspan="8"
-              class="px-2 py-1 bg-gray-50"
-            >
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                <div>
-                  <label class="block font-medium">Sales Tax Amt</label>
-                  <div class="mt-1">{{ row.salesTaxApplicable?.toFixed(2) }}</div>
-                </div>
+                <UButton
+icon="i-lucide-x" variant="outline" class="rounded-full" size="xs" color="error"
+                  title="Delete Row" @click="removeRow(idx)" />
 
-                <div>
-                  <label class="block font-medium">Withheld Tax</label>
-                  <UInput
-                    v-model.number="row.salesTaxWithheldAtSource"
-                    type="number"
-                    class="w-full text-right px-1 py-0.5 mt-1"
-                    @update:model-value="() => onFieldChange(row)"
-                  />
-                </div>
+              </td>
+            </tr>
+            <tr v-if="row.showDetails" class="bg-gray-50">
+              <td colspan="6" class="px-2 py-1 bg-gray-50">
+                <div class="px-2 py-1 bg-gray-50 w-full">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <label class="block font-medium">Sales Tax Amt</label>
+                      <div class="mt-1">{{ row.salesTaxApplicable?.toFixed(2) }}</div>
+                    </div>
 
-                <div>
-                  <label class="block font-medium">Discount</label>
-                  <UInput
-                    v-model.number="row.lineDiscount"
-                    type="number"
-                    class="w-full text-right px-1 py-0.5 mt-1"
-                    @update:model-value="() => onFieldChange(row)"
-                  />
+                    <div>
+                      <label class="block font-medium">Withheld Tax</label>
+                      <UInput
+v-model.number="row.salesTaxWithheldAtSource" type="number"
+                        class="w-full text-right px-1 py-0.5 mt-1" @update:model-value="() => onFieldChange(row)" />
+                    </div>
+
+                    <div>
+                      <label class="block font-medium">Discount</label>
+                      <UInput
+v-model.number="row.lineDiscount" type="number" class="w-full text-right px-1 py-0.5 mt-1"
+                        @update:model-value="() => onFieldChange(row)" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </td>
-          </tr>
+              </td>
+            </tr>
+
+          </template>
+
+
+
         </tbody>
       </table>
     </div>
+
 
     <!-- Add Row footer -->
     <div class="p-2 border-t bg-gray-50 text-right">
@@ -125,11 +126,13 @@ import { onMounted, ref } from 'vue';
   // Lookup arrays
   const itemsOptions = ref<IItem[]>([])
   const uomOptions = ref<IUom[]>([])
-
+  interface LineRow extends IInvoiceItem {
+    showDetails?: boolean,
+    item?: IItem,
+  }
   // Table rows
-  const rows = ref<IInvoiceItem[]>([])
-  // Details open flags by row index
-  const detailsOpen = ref<boolean[]>([])
+  const rows = ref<LineRow[]>([])
+
 
 
 
@@ -168,26 +171,23 @@ import { onMounted, ref } from 'vue';
     row.rate = match.rate
     row.uomCode = match.uomCode
     console.log('Matched item:', match)
-    
+
     row.salesTaxRate = match.defaultSalesTaxRate || 0
 
     console.log('Populated row:', JSON.parse(JSON.stringify(row)))
     onFieldChange(row)
   }
 
-  // Toggle details visibility for a given index
-  function toggleDetails(idx: number) {
-    detailsOpen.value[idx] = !detailsOpen.value[idx]
-  }
+
 
   // Add a fresh blank row
   function addRow() {
-    const newRow: IInvoiceItem = {
+    const newRow: LineRow = {
       id: Date.now(),
-      item: '',
+      itemId: 0,
       hsCode: '',
       uomCode: '',
-      
+
       quantity: 1,
       rate: 0,
       salesTaxRate: 0,
@@ -198,10 +198,11 @@ import { onMounted, ref } from 'vue';
       totalValues: 0,
       extraTax: 0,
       furtherTax: 0,
-      fedPayable: 0
+      fedPayable: 0,
+      showDetails: false
     }
     rows.value.push(newRow)
-    detailsOpen.value.push(false)
+
     console.log('addRow → rows:', JSON.parse(JSON.stringify(rows.value)))
     emit('item-added', plainRows())
   }
@@ -209,8 +210,8 @@ import { onMounted, ref } from 'vue';
   // Remove a row at index
   function removeRow(idx: number) {
     rows.value.splice(idx, 1)
-    detailsOpen.value.splice(idx, 1)
-    console.log('removeRow → rows:', JSON.parse(JSON.stringify(rows.value)))
+
+    //console.log('removeRow → rows:', JSON.parse(JSON.stringify(rows.value)))
     emit('item-removed', plainRows())
   }
 
@@ -221,8 +222,7 @@ import { onMounted, ref } from 'vue';
     console.log('Loaded itemsOptions:', JSON.parse(JSON.stringify(itemsOptions.value)))
 
     rows.value = props.itemsTable.map(r => ({ ...r }))
-    detailsOpen.value = rows.value.map(() => false)
-    console.log('Mounted → rows initialized:', JSON.parse(JSON.stringify(rows.value)))
+
     emit('loaded')
   })
 

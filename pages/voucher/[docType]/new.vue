@@ -3,7 +3,7 @@
     <UContainer class="flex flex-col gap-6">
         <!-- Header -->
         <div class="flex justify-between items-center">
-            <UText tag="h1" class="text-2xl font-bold">{{ pageTitle }}</UText>
+            <UText tag="h1" class="text-4xl font-extrabold uppercase text-gray-400">{{ pageTitle }} # {{ nextInvoiceNumber }}</UText>
             <UBadge
 :color="{
                 draft: 'neutral',
@@ -17,7 +17,7 @@
 
         <!-- Buyer Info -->
         <div class="grid grid-cols-2 gap-8">
-            <div class="space-y-4">
+            <div class="space-y-2">
                 <UFormField label="Buyer Name" label-placement="bottom" :error="errors.customer">
                     <CustomerSelect v-model="invoice.customerId" @select="setCustomer" />
                 </UFormField>
@@ -26,34 +26,39 @@
 
         <!-- Invoice Meta -->
         <div class="flex flex-wrap gap-6 mt-4">
-            <UFormField label="Invoice Type">
-                <UInput :value="docTypeLabel" readonly />
-            </UFormField>
-            <UFormField label="Scenario">
-                <USelect v-model="invoice.scenarioId" :items="scenarioOptions" @update:model-value="onScenarioChange" />
-            </UFormField>
-            <UFormField label="Transaction Type">
-                <USelect v-model="invoice.transactionTypeId" :items="transactionTypeOptions" />
-            </UFormField>
-
-            <UFormField label="Invoice Date">
-                <UInput v-model="invoice.invoiceDate" type="date" class="w-48" />
-            </UFormField>
-            <UFormField label="Due Date">
-                <UInput v-model="invoice.meta.dueDate" type="date" class="w-48" readonly />
-            </UFormField>
-            <UFormField v-if="showTerms" label="Terms">
-                <USelect v-model="invoice.meta.terms" :items="termsOptions" class="w-48" />
-            </UFormField>
+            <div class="hidden">
+                <UFormField label="Invoice Type" hidden>
+                    <UInput :value="docTypeLabel" readonly />
+                </UFormField>
+                <UFormField label="Scenario" hidden>
+                    <USelect
+v-model="invoice.scenarioId" :items="scenarioOptions"
+                        @update:model-value="onScenarioChange" />
+                </UFormField>
+                <UFormField label="Transaction Type" hidden>
+                    <USelect v-model="invoice.transactionTypeId" :items="transactionTypeOptions" />
+                </UFormField>
+            </div>
+            <div class="flex flex-row gap-6">
+                <UFormField label="Invoice Date">
+                    <UInput v-model="invoice.invoiceDate" type="date" class="w-44" />
+                </UFormField>
+                <UFormField label="Due Date">
+                    <UInput v-model="invoice.meta.dueDate" type="date" class="w-44" readonly />
+                </UFormField>
+                <UFormField v-if="showTerms" label="Terms">
+                    <USelect v-model="invoice.meta.terms" :items="termsOptions" class="w-44" />
+                </UFormField>
+            </div>
         </div>
 
         <!-- Items Table -->
         <UCard
-class="mt-6" :ui="{ 
-    root:  'sm:py-0 ',      // remove padding from the outer wrapper 
-    body:  'sm:p-0 p-0',      // remove padding from the body container 
-    footer: 'p-0'      // (if you need) remove padding from a footer slot 
-  }">
+class="mt-6" :ui="{
+            root: 'sm:py-0 ',      // remove padding from the outer wrapper 
+            body: 'sm:p-0 p-0',      // remove padding from the body container 
+            footer: 'p-0'      // (if you need) remove padding from a footer slot 
+        }">
             <template #header>
                 <UText tag="h2" class="text-lg font-semibold">Item Details</UText>
             </template>
@@ -181,6 +186,10 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
     const invoiceRepo = useInvoiceRepo();
     const customerRepo = useCustomerRepo();
     const transTypeRepo = useTransactionTypeRepo();
+
+    const nextInvoiceNumber = ref<string>('');
+
+
 
     const scenarioOptions = [
         {
@@ -310,14 +319,14 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
     // — UI Logic —
 
     const summaryRows = computed(() => [
-  { label: 'Sub-Total',       value: subTotal.value,          sign: '',  isNegative: false },
-  { label: 'Sales Tax',       value: totalSalesTax.value,     sign: '',  isNegative: false },
-  { label: 'Withheld Tax',    value: totalWithheldTax.value,  sign: '-', isNegative: true  },
-  { label: 'Extra Tax',       value: totalExtraTax.value,      sign: '',  isNegative: false },
-  { label: 'Line Discounts',  value: totalLineDiscount.value,  sign: '-', isNegative: true  },
-  { label: 'Header Discount', value: invoice.discount,         sign: '-', isNegative: true  },
-  { label: 'Shipping',        value: invoice.shipping,         sign: '',  isNegative: false },
-]);
+        { label: 'Sub-Total', value: subTotal.value, sign: '', isNegative: false },
+        { label: 'Sales Tax', value: totalSalesTax.value, sign: '', isNegative: false },
+        { label: 'Withheld Tax', value: totalWithheldTax.value, sign: '-', isNegative: true },
+        { label: 'Extra Tax', value: totalExtraTax.value, sign: '', isNegative: false },
+        { label: 'Line Discounts', value: totalLineDiscount.value, sign: '-', isNegative: true },
+        { label: 'Header Discount', value: invoice.discount, sign: '-', isNegative: true },
+        { label: 'Shipping', value: invoice.shipping, sign: '', isNegative: false },
+    ]);
 
     const showTerms = computed(() => docType !== 'credit');
     const isValid = computed(
@@ -335,6 +344,8 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
             value: t.transaction_TYPE_ID,
         }));
         customerOptions.value = customers;
+        nextInvoiceNumber.value =
+            await invoiceRepo.getNextNumber();
     });
 
     // — Handlers —
@@ -395,11 +406,47 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
             const id = await invoiceRepo.saveDraft(invoice);
             invoice.id = id;
             console.log('Draft saved with ID:', id);
+
+
+            resetInvoice();
         } catch (err: any) {
             console.error('Error saving draft:', err);
             errors.form = err.message;
         } finally {
             isSaving.value = false;
         }
+    }
+
+    async function resetInvoice() {
+        invoice.id = undefined;
+        invoice.invoiceNumber = await invoiceRepo.getNextNumber();
+        invoice.invoiceDate = initialIso;
+        invoice.items = [];
+        invoice.discount = 0;
+        invoice.shipping = 0;
+        invoice.invoiceTotalValue = 0;
+        invoice.fbrInvoiceNumber = undefined;
+
+        invoice.scenarioId = scenarioOptions[0].value;
+        invoice.transactionTypeId = defaultTransType;
+
+        invoice.validation = {
+            attempts: [],
+            lastStatus: 'draft',
+        };
+
+        invoice.meta = {
+            dueDate: initialIso,
+            currencyCode: 'PKR',
+            saleType: scenarioOptions[0].saleType,
+            status: 'draft',
+            notes: '',
+            termsAndConditions: '',
+            terms: termsOptions[0].value,
+            createdAt: formatDateDMY(initialIso),
+            createdBy: 'system',
+            updatedAt: undefined,
+            updatedBy: undefined,
+        };
     }
 </script>

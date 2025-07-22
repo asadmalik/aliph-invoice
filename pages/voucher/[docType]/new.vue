@@ -48,7 +48,12 @@
         </div>
 
         <!-- Items Table -->
-        <UCard class="mt-6">
+        <UCard
+class="mt-6" :ui="{ 
+    root:  'sm:py-0 ',      // remove padding from the outer wrapper 
+    body:  'sm:p-0 p-0',      // remove padding from the body container 
+    footer: 'p-0'      // (if you need) remove padding from a footer slot 
+  }">
             <template #header>
                 <UText tag="h2" class="text-lg font-semibold">Item Details</UText>
             </template>
@@ -304,15 +309,15 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
 
     // — UI Logic —
 
-    const summaryRows = [
-        { label: 'Sub-Total', value: subTotal.value, sign: '', isNegative: false },
-        { label: 'Sales Tax', value: totalSalesTax.value, sign: '', isNegative: false },
-        { label: 'Withheld Tax', value: totalWithheldTax.value, sign: '-', isNegative: true },
-        { label: 'Extra Tax', value: totalExtraTax.value, sign: '', isNegative: false },
-        { label: 'Line Discounts', value: totalLineDiscount.value, sign: '-', isNegative: true },
-        { label: 'Header Discount', value: invoice.discount, sign: '-', isNegative: true },
-        { label: 'Shipping', value: invoice.shipping, sign: '', isNegative: false },
-    ];
+    const summaryRows = computed(() => [
+  { label: 'Sub-Total',       value: subTotal.value,          sign: '',  isNegative: false },
+  { label: 'Sales Tax',       value: totalSalesTax.value,     sign: '',  isNegative: false },
+  { label: 'Withheld Tax',    value: totalWithheldTax.value,  sign: '-', isNegative: true  },
+  { label: 'Extra Tax',       value: totalExtraTax.value,      sign: '',  isNegative: false },
+  { label: 'Line Discounts',  value: totalLineDiscount.value,  sign: '-', isNegative: true  },
+  { label: 'Header Discount', value: invoice.discount,         sign: '-', isNegative: true  },
+  { label: 'Shipping',        value: invoice.shipping,         sign: '',  isNegative: false },
+]);
 
     const showTerms = computed(() => docType !== 'credit');
     const isValid = computed(

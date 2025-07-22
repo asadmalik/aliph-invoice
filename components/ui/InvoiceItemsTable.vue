@@ -212,4 +212,13 @@ import { onMounted, ref } from 'vue';
     emit('loaded')
   })
 
+  watch(
+    () => props.itemsTable,
+    (newItems) => {
+      // always ensure it's an array
+      rows.value = Array.isArray(newItems) ? [...newItems] : []
+    },
+    { immediate: true, deep: true }
+  )
+
 </script>

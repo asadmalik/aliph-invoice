@@ -78,53 +78,70 @@ export interface ICustomer {
 
 export type UnitType = 'Fixed' | 'Hourly' | 'UOM'
 
+// DataLayer/types.ts
+
+/** Master catalog definition for every product/item */
 export interface IItem {
     id?: number
+    /** Legal or trade name */
     name: string
-    /** "Fixed" = lump sum, "Hourly" = time & materials, "UOM" = DI measured */
-    unitType: UnitType
-    /** Default rate excl. tax */
-    rate: number
 
-    /* ---------- DI-specific -------------------------- */
-    /** UOM code – pulled from IUom list */
+    /** How this item is billed */
+    unitType: UnitType                // “Fixed” | “Hourly” | “UOM”
+    rate: number                      // Default unit rate (excl. tax)
+
+    /** Optional catalog metadata */
+    description?: string
+    location?: string                 // Warehouse or storage
+
+    /** Default tax settings */
+    defaultSalesTaxRate?: number      // (0–100%)
+    fbrSaleType?: string              // e.g. “Goods at Standard Rate”
+
+    /** DI lookups */
     uomCode?: string
-    /** HS code – pulled from IHsCode list */
     hsCode?: string
 
-    /** Free-form description of the item */
-    description?: string
-
-    /** Warehouse or storage location code */
-    location?: string
-
-    /** Default sales tax rate (0–100%) */
-    defaultSalesTaxRate?: number
-
-    /** FBR sale type, e.g. "Goods at Standard Rate" */
-    fbrSaleType?: string
-
-    /** Quantity for this invoice line */
-    quantity?: number
-
-    /** Tax rate applied to this line (0–100%) */
-    tax?: number
-
-    /** Optional label for the tax */
-    taxName?: string
-
-    /** When this record was created */
+    /** Audit */
     createdAt?: string
-
-    /** UID of the user who created it */
     createdBy?: string
-
-    /** When this record was last updated */
     updatedAt?: string | null
-
-    /** UID of the user who last updated it */
     updatedBy?: string | null
 }
+
+/** One line on an invoice—references IItem by ID */
+export interface IInvoiceItem {
+    id?: number
+    invoiceId?: number                // FK to IInvoice.id
+
+    /** Which catalog item this line is for */
+    itemId: number
+    /** Cached display name (optional, for UI) */
+    itemName?: string
+
+    quantity: number
+    rate: number                       // unit rate excl. tax
+
+    /** Required DI fields per line */
+    uomCode: string
+    hsCode: string
+
+    /** Any overrides or extras */
+    extraTax?: number
+    furtherTax?: number
+    sroScheduleNo?: string
+    sroItemSerialNo?: string
+
+    /** Computed by your DI-prep logic */
+    salesTaxRate?: number
+    salesTaxApplicable?: number
+    salesTaxWithheldAtSource?: number
+    fedPayable?: number
+    lineDiscount?: number
+    valueSalesExcludingST?: number
+    totalValues?: number
+}
+
 
 /* ---------- Tax rules (unchanged) --------------------------- */
 
@@ -137,41 +154,9 @@ export interface ITaxItem {
 
 /* ---------- Invoice composition ----------------------------- */
 
-export interface IInvoiceItem {
-    id?: number
-    /** FK after save */
-    invoiceId?: number
-
-    /** Human text – still useful on UI */
-    item: string
-    quantity: number
-    rate: number          // excl. tax
-    
-    /**DEPRICATED: Use totalValues instead. //rate * qty + tax */
-    /* amount: number */
-
-    /* ----- DI payload extras (computed or selected) ----- */
-    /** HS code of the product */
-    hsCode?: string
-    /** UOM code */
-    uomCode?: string
-    /** extra / further tax % */
-    extraTax?: number
-    furtherTax?: number
-    /** Only present if product falls under an SRO */
-    sroScheduleNo?: string   /** AUTO **/
-    sroItemSerialNo?: string /** AUTO **/
-
-    salesTaxRate?: number
-    salesTaxApplicable?: number
-    salesTaxWithheldAtSource?: number
-    fedPayable?: number
-    lineDiscount?: number
-    valueSalesExcludingST?: number
-    totalValues?: number
-}
 
 
+type ValidationResult = 'draft' | 'validation_success' | 'validation_failure';
 
 export interface IInvoice {
     id?: number
@@ -184,8 +169,8 @@ export interface IInvoice {
 
     /* ---------- Header fields ----------------------- */
     invoiceNumber: string                   //RETURN DI
-    
-    invoiceVoucherType: 
+
+    invoiceVoucherType:
     'Sale Invoice' | 'Purchase Invoice' | 'Credit Note' | 'Debit Note' | string | null           // DI- MAP: invoviceType
 
 
@@ -212,8 +197,8 @@ export interface IInvoice {
     /** Derived sale-type string sent to SaleType→Rate */
     saleType?: string         /** AUTO **/
 
-    
-    
+
+
     /** Workflow status */
     status: InvoiceStatus
 
@@ -231,9 +216,22 @@ export interface IInvoice {
     termsAndConditions?: string
     discount?: number
     shipping?: number
+    invoiceTotalValue?: number
+    validation: any
+    meta: {
+        dueDate: string;
+        currencyCode: string;
+        saleType: string;
+        status: string;
+        notes: string;
+        termsAndConditions: string;
+        terms: string;
+        createdAt: string;
+        createdBy: string;
+        updatedAt: any;
+        updatedBy: any;
+    }
 
-    validation: ValidationResult 
-    
 }
 
 

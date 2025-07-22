@@ -70,7 +70,18 @@ import { useCustomerRepo } from '~/composables/useRepos';
     (e: 'select', customer: ICustomer): void
   }>()
 
+  // Local selection
   const selectedIdLocal = ref<number | null>(props.modelValue)
+
+  // **1️⃣ Sync parent → child whenever modelValue changes**
+  watch(
+    () => props.modelValue,
+    (newVal) => {
+      selectedIdLocal.value = newVal
+    }
+  )
+
+  // Load customers
   const customers = ref<(ICustomer & { image?: string })[]>([])
   const selectItems = ref<SelectItem[]>([])
   const customerRepo = useCustomerRepo()
@@ -80,24 +91,29 @@ import { useCustomerRepo } from '~/composables/useRepos';
     selectItems.value = customers.value.map(c => ({
       label: c.name,
       value: c.id!,
-      avatar: { src: c.image! }
+      avatar: { src: c.image! },
     }))
   })
 
+  // Avatar & details
   const avatar = computed<AvatarProps>(() => {
-    return selectItems.value.find(item => item.value === selectedIdLocal.value)?.avatar || { }
+    // Type guard for SelectItem object
+    const item = selectItems.value.find(
+      (i): i is SelectItem => typeof i === 'object' && i !== null && 'value' in i
+        && i.value === selectedIdLocal.value
+    );
+    return item?.avatar || {};
   })
+  const selectedCustomer = computed<ICustomer | null>(() =>
+    customers.value.find(c => c.id === selectedIdLocal.value) || null
+  )
 
-  const selectedCustomer = computed<ICustomer | null>(() => {
-    return customers.value.find(c => c.id === selectedIdLocal.value) || null
-  })
-
+  // **2️⃣ Emit both the v-model change and the full object on selection**
   watch(selectedIdLocal, (newId) => {
     if (newId != null) {
       const cust = selectedCustomer.value!
       emit('update:modelValue', newId)
       emit('select', cust)
-      console.log('Selected customer details:', cust)
     }
   })
 </script>

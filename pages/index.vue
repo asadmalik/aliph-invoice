@@ -139,6 +139,8 @@
           </UButton>
         </template>
       </UCard>
+
+      <CardsSaleInvoices />
     </div>
 
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-9">
@@ -147,7 +149,8 @@
         v-for="card in cards"
         :key="card.to"
         :ui="{ root: 'flex flex-col gap-4' }"
-        class="hover:shadow-lg transition"
+        class=""
+        variant="subtle"
       >
         <template #header>
           <UIcon
@@ -164,7 +167,7 @@
         </p>
 
         <template #footer>
-          <UButton :to="card.to" color="primary">{{
+          <UButton :to="card.to" color="neutral" disabled>{{
             card.cta
           }}</UButton>
         </template>
@@ -195,22 +198,7 @@ const items = ref([]);
 const customers = ref([]);
 
 const cards = [
-  // Sale Invoices
-  {
-    title: "Create Sale Invoice",
-    description:
-      "Generate a new sales invoice for a customer.",
-    icon: "i-heroicons-plus-circle",
-    cta: "New Sale",
-    to: `${voucherBase("sale")}/new`,
-  },
-  {
-    title: "Sale Invoices",
-    description: "Browse and manage all sales invoices.",
-    icon: "i-heroicons-document-text",
-    cta: "View Sales",
-    to: `${voucherBase("sale")}`,
-  },
+
 
   // Purchase Invoices
   {

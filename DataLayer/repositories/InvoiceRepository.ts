@@ -9,29 +9,7 @@ export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
         super(db.invoices)  // table is header‑only
     }
 
-    /*───────────────────────────────────────────────────────────
-    Create invoice + line‑items in one Dexie transaction
-    Returns new invoice ID
-  ───────────────────────────────────────────────────────────*/
-    /* async addWithItems(invoice: IInvoice): Promise<number> {
-        const plain = structuredClone(invoice)         // strip proxies
-        const { items, ...header } = plain
-        if (items.length < 0) return 0;
-        // make sure header has no id (auto‑inc) and each row gets a fresh PK
-        delete header.id
-        items?.forEach(r => delete r.id)
 
-        return db.transaction('rw', db.invoices, db.invoiceItems, async () => {
-            const id = await db.invoices.add(header)     // header only
-
-            if (items?.length) {
-                const rows: IInvoiceItem[] =
-                    items.map(r => ({ ...r, invoiceId: id })) // fk + fresh pk
-                await db.invoiceItems.bulkAdd(rows)
-            }
-            return id
-        })
-    } */
 
     async addWithItems(invoice: IInvoice): Promise<number | string | undefined> {
         const raw = toRaw(invoice);
@@ -94,6 +72,10 @@ export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
         return { ...header, items }
     }
 
+    async getInvoiceItems(invoiceId: number): Promise<IInvoice['items']> {
+        return db.invoiceItems.where('invoiceId').equals(invoiceId).toArray()
+    }
+
     /** customer filter remains unchanged */
     async getByCustomer(customerId: number) {
         return this.table.where('customerId').equals(customerId).toArray()
@@ -134,6 +116,35 @@ export class InvoiceRepository extends BaseRepository<InvoiceHeader> {
 
         // If all checks pass, mark as posted
         //await db.invoices.update(invoiceId, { posted: true })
+    }
+
+    async saveDraft(invoice: IInvoice): Promise<number | string | undefined> {
+        const raw = toRaw(invoice);
+        const data = JSON.parse(JSON.stringify(raw)) as IInvoice;
+        const { items, id: _, ...header } = data;
+        console.log('invoice repo, header:', header, items);
+
+        items?.forEach(r => delete r.id)
+
+        // return the numeric id from the transaction
+        return db.transaction('rw', db.invoices, db.invoiceItems, async () => {
+            let id: undefined | number | string;
+            try {
+                id = await db.invoices.add(header)
+            } catch (error) {
+                console.error('Error adding invoice header:', error);
+            }
+
+
+            if (items?.length) {
+                const rows = items.map(r => ({ ...r, invoiceId: id }))
+                await db.invoiceItems.bulkAdd(rows)
+            }
+            console.log('invoice repo, inv id:', id)
+
+            return id
+
+        })
     }
 }
 

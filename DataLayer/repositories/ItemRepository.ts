@@ -11,12 +11,16 @@ export class ItemRepository extends BaseRepository<IItem> {
 
     /** Fetch all line-items for a given invoice */
     async getByInvoice(invoiceId: number): Promise<IItem[]> {
-        return this.table.where('invoiceId').equals(invoiceId).toArray()
+        const items = await this.table.where('invoiceId').equals(invoiceId).toArray()
+        console.log("DB ITEMS: ", items, invoiceId)
+        return items
     }
 
     /** Find items by exact name (case-insensitive) */
     async findByName(name: string): Promise<IItem[]> {
-        return this.table.where('name').equalsIgnoreCase(name).toArray()
+        const items = await this.table.where('name').equalsIgnoreCase(name).toArray()
+        //console.log("DB ITEMS: ", items)
+        return items
     }
 
     /** Find items by HS code */

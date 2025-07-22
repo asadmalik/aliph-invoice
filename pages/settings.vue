@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ICustomer, IItem } from '~/DataLayer/types'
+
   const itemRepo = useItemRepo()
   const customerRepo = useCustomerRepo()
 

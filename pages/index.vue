@@ -178,6 +178,46 @@ const showDialog = computed<boolean>({
   set: val => { if (!val) confirmType.value = '' }
 })
 
+// Cards data
+  const voucherBase = (type: string) => `/voucher/${type}`
+  const cards = [
+    {
+      title: 'Create Purchase Invoice',
+      description: 'Generate a new purchase invoice.',
+      icon: 'i-heroicons-plus-circle',
+      cta: 'New Purchase',
+      to: `${voucherBase('purchase')}/new`
+    },
+    {
+      title: 'Purchase Invoices',
+      description: 'Browse and manage all purchase invoices.',
+      icon: 'i-heroicons-document-text',
+      cta: 'View Purchases',
+      to: `${voucherBase('purchase')}`
+    },
+    {
+      title: 'Create Credit Note',
+      description: 'Issue a credit note for a previous invoice.',
+      icon: 'i-heroicons-plus-circle',
+      cta: 'New Credit',
+      to: `${voucherBase('credit')}/new`
+    },
+    {
+      title: 'Credit Notes',
+      description: 'Browse and manage all credit notes.',
+      icon: 'i-heroicons-document-text',
+      cta: 'View Credits',
+      to: `${voucherBase('credit')}`
+    },
+    {
+      title: 'Settings',
+      description: 'Customize tax rates, company info and more.',
+      icon: 'i-heroicons-cog-6-tooth',
+      cta: 'Open Settings',
+      to: '/settings'
+    }
+  ]
+// — UI Logic —
 // on mount, check both tables just once
 onMounted(async () => {
   const rawItems = await itemRepo.getAll()

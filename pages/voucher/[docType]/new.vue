@@ -4,7 +4,8 @@
         <!-- Header -->
         <div class="flex justify-between items-center">
             <UText tag="h1" class="text-2xl font-bold">{{ pageTitle }}</UText>
-            <UBadge :color="{
+            <UBadge
+:color="{
                 draft: 'neutral',
                 validated: 'primary',
                 posted: 'success',
@@ -51,7 +52,8 @@
             <template #header>
                 <UText tag="h2" class="text-lg font-semibold">Item Details</UText>
             </template>
-            <InvoiceItemsTable :items-table="invoice.items" :status="invoice.meta.status" :scenario="invoice.scenarioId"
+            <InvoiceItemsTable
+:items-table="invoice.items" :status="invoice.meta.status" :scenario="invoice.scenarioId"
                 :sale-type="invoice.meta.saleType" @item-added="syncItems" @item-removed="syncItems"
                 @item-updated="syncItems" />
             <template #footer>
@@ -61,70 +63,84 @@
             </template>
         </UCard>
 
-        <!-- Totals & Extras -->
-        <div class="grid grid-cols-2 gap-8 mt-6">
-            <div class="space-y-4">
-                <UFormField label="Header Discount">
-                    <UInput v-model.number="invoice.discount" type="number" />
-                </UFormField>
-                <UFormField label="Shipping">
-                    <UInput v-model.number="invoice.shipping" type="number" />
-                </UFormField>
-                <UFormField label="Notes">
-                    <UTextarea v-model="invoice.meta.notes" rows="3" />
-                </UFormField>
-            </div>
+        <!-- Totals & Extras Wrapper -->
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 mt-6">
+            <!-- Left: Inputs -->
+            <UCard flat class="p-4">
+                <template #header>
+                    <h3 class="text-lg font-semibold">Extras &amp; Notes</h3>
+                </template>
 
-            <div class="self-end w-80 space-y-1 text-sm">
-                <div class="flex justify-between">
-                    <span>Sub-Total:</span><span>{{ fmt(subTotal) }}</span>
+                <!-- Discount & Shipping row -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <UFormField label="Header Discount" label-placement="top">
+                        <UInput v-model.number="invoice.discount" type="number" placeholder="0.00" class="w-full" />
+                    </UFormField>
+
+                    <UFormField label="Shipping" label-placement="top">
+                        <UInput v-model.number="invoice.shipping" type="number" placeholder="0.00" class="w-full" />
+                    </UFormField>
                 </div>
-                <div class="flex justify-between">
-                    <span>Sales Tax:</span><span>{{ fmt(totalSalesTax) }}</span>
+
+                <!-- Notes (full width, taller) -->
+                <UFormField label="Notes" label-placement="top">
+                    <UTextarea
+v-model="invoice.meta.notes" rows="5" placeholder="Any special instructions…"
+                        class="w-full" />
+                </UFormField>
+            </UCard>
+
+            <!-- Right: Summary Card -->
+            <UCard class="relative overflow-hidden">
+                <!-- Header Bar -->
+                <div class="bg-primary/10 px-4 py-3">
+                    <h3 class="text-lg font-semibold text-primary">Invoice Summary</h3>
                 </div>
-                <div class="flex justify-between">
-                    <span>Withheld Tax:</span><span>-{{ fmt(totalWithheldTax) }}</span>
+
+                <div class="p-4 space-y-2 text-sm">
+                    <!-- Detail Rows -->
+                    <div v-for="(row, i) in summaryRows" :key="i" class="grid grid-cols-2 items-center">
+                        <span class="text-gray-600">{{ row.label }}</span>
+                        <span :class="['text-right', row.isNegative ? 'text-red-600' : 'text-gray-800']">
+                            {{ row.sign }}{{ fmt(row.value) }}
+                        </span>
+                    </div>
+
+                    <!-- Divider -->
+                    <UDivider class="my-2" />
+
+                    <!-- Grand Total -->
+                    <div class="grid grid-cols-2 items-center font-semibold text-lg">
+                        <span class="text-gray-800">Grand Total</span>
+                        <span class="text-right text-primary">{{ fmt(grandTotal) }}</span>
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <span>Extra Tax:</span><span>{{ fmt(totalExtraTax) }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Line Discounts:</span><span>-{{ fmt(totalLineDiscount) }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Header Discount:</span><span>-{{ fmt(invoice.discount) }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Shipping:</span><span>{{ fmt(invoice.shipping) }}</span>
-                </div>
-                <div class="border-t pt-1 flex justify-between font-semibold text-lg">
-                    <span>Grand Total:</span><span>{{ fmt(grandTotal) }}</span>
-                </div>
-            </div>
+            </UCard>
         </div>
 
         <!-- Actions -->
-        <div class="flex gap-2 self-end mt-8">
-            <UButton color="primary" :disabled="!isValid" :loading="isSaving" @click="saveDraft">Save Draft</UButton>
+        <div class="flex justify-end mt-8">
+            <UButton color="primary" :disabled="!isValid" :loading="isSaving" @click="saveDraft">
+                Save Draft
+            </UButton>
         </div>
     </UContainer>
 </template>
 
 <script setup lang="ts">
     import type {
-        ICustomer,
-        IInvoice,
-        IInvoiceItem,
-        InvoiceStatus,
-    } from '@/DataLayer/types';
-    import {
-        useCustomerRepo,
-        useInvoiceRepo,
-        useTransactionTypeRepo,
-    } from '@/composables/useRepos';
-    import type { ComputedRef } from 'vue';
-    import CustomerSelect from '~/components/ui/CustomerSelect.vue';
-    import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
+    ICustomer,
+    IInvoice,
+    IInvoiceItem,
+    InvoiceStatus,
+} from '@/DataLayer/types';
+import {
+    useCustomerRepo,
+    useInvoiceRepo,
+    useTransactionTypeRepo,
+} from '@/composables/useRepos';
+import CustomerSelect from '~/components/ui/CustomerSelect.vue';
+import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
 
     // — Page Meta & Title —
     const pageTitle = computed(() => {
@@ -273,19 +289,31 @@
             0
         )
     );
-    const grandTotal: ComputedRef<number> = computed(
-        () =>
-            subTotal.value || 0 +
-            totalSalesTax.value || 0 +
-            totalExtraTax.value || 0 -
-            totalWithheldTax.value || 0 -
-            totalLineDiscount.value || 0 -
-            (invoice.discount || 0) +
-            (invoice.shipping || 0)
-    );
+    const grandTotal = computed(() => {
+        const st = subTotal.value ?? 0;
+        const tax = totalSalesTax.value ?? 0;
+        const ext = totalExtraTax.value ?? 0;
+        const wht = totalWithheldTax.value ?? 0;
+        const ld = totalLineDiscount.value ?? 0;
+        const hd = invoice.discount ?? 0;
+        const sh = invoice.shipping ?? 0;
+
+        return st + tax + ext - wht - ld - hd + sh;
+    });
     const fmt = (n: number) => n.toFixed(2);
 
     // — UI Logic —
+
+    const summaryRows = [
+        { label: 'Sub-Total', value: subTotal.value, sign: '', isNegative: false },
+        { label: 'Sales Tax', value: totalSalesTax.value, sign: '', isNegative: false },
+        { label: 'Withheld Tax', value: totalWithheldTax.value, sign: '-', isNegative: true },
+        { label: 'Extra Tax', value: totalExtraTax.value, sign: '', isNegative: false },
+        { label: 'Line Discounts', value: totalLineDiscount.value, sign: '-', isNegative: true },
+        { label: 'Header Discount', value: invoice.discount, sign: '-', isNegative: true },
+        { label: 'Shipping', value: invoice.shipping, sign: '', isNegative: false },
+    ];
+
     const showTerms = computed(() => docType !== 'credit');
     const isValid = computed(
         () => invoice.customerId > 0 && invoice.items?.length > 0
@@ -367,6 +395,6 @@
             errors.form = err.message;
         } finally {
             isSaving.value = false;
-  }
-}
+        }
+    }
 </script>

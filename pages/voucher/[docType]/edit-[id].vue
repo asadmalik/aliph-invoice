@@ -1,24 +1,26 @@
 <template>
   <UContainer class="flex flex-col gap-6">
     <!-- Header -->
-    <div class="flex justify-between items-start">
-      <div>
-        <UText tag="h1" class="text-2xl font-bold">{{ pageTitle }}</UText>
-        <p class="text-sm text-gray-600 mt-1">Invoice #: {{ invoice.invoiceNumber }}</p>
-      </div>
-      <UBadge :color="{
-        draft: 'info',
-        validated: 'primary',
-        posted: 'success',
-        validation_failure: 'error',
-      }[invoice.meta.status]" class="uppercase px-3 py-1 rounded">
+    <div class="flex justify-between items-center">
+      <UText tag="h1" class="text-4xl font-extrabold uppercase text-gray-400">
+        {{ pageTitle }} # {{ invoice.invoiceNumber }}
+      </UText>
+      <UBadge
+        :color="{
+          draft: 'neutral',
+          validated: 'primary',
+          posted: 'success',
+          validation_failure: 'error',
+        }[invoice.meta.status]"
+        class="uppercase px-3 py-1 rounded"
+      >
         {{ invoice.meta.status }}
       </UBadge>
     </div>
 
     <!-- Buyer Info -->
     <div class="grid grid-cols-2 gap-8">
-      <div class="space-y-4">
+      <div class="space-y-2">
         <UFormField label="Buyer Name" label-placement="bottom" :error="errors.customer" :disabled="isBusy">
           <CustomerSelect v-model="invoice.customerId" :disabled="isBusy" @select="setCustomer" />
         </UFormField>
@@ -27,68 +29,108 @@
 
     <!-- Invoice Meta -->
     <div class="flex flex-wrap gap-6 mt-4">
-      <UFormField label="Scenario" :disabled="isBusy">
-        <USelect v-model="invoice.scenarioId" :items="scenarioOptions" :disabled="isBusy"
-          @update:model-value="onScenarioChange" />
-      </UFormField>
-      <UFormField label="Transaction Type" :disabled="isBusy">
-        <USelect v-model="invoice.transactionTypeId" :items="transactionTypeOptions" :disabled="isBusy" />
-      </UFormField>
-
-      <UFormField label="Invoice Date" :disabled="isBusy">
-        <UInput v-model="invoice.invoiceDate" type="date" class="w-48" :disabled="isBusy" />
-      </UFormField>
-      <UFormField label="Due Date">
-        <UInput v-model="invoice.meta.dueDate" type="date" class="w-48" readonly />
-      </UFormField>
-      <UFormField v-if="showTerms" label="Terms" :disabled="isBusy">
-        <USelect v-model="invoice.meta.terms" :items="termsOptions" class="w-48" :disabled="isBusy" />
-      </UFormField>
+      <div class="hidden">
+        <UFormField label="Scenario" hidden>
+          <USelect
+            v-model="invoice.scenarioId"
+            :items="scenarioOptions"
+            :disabled="isBusy"
+            @update:model-value="onScenarioChange"
+          />
+        </UFormField>
+        <UFormField label="Transaction Type" hidden>
+          <USelect v-model="invoice.transactionTypeId" :items="transactionTypeOptions" :disabled="isBusy" />
+        </UFormField>
+      </div>
+      <div class="flex flex-row gap-6">
+        <UFormField label="Invoice Date" :disabled="isBusy">
+          <UInput v-model="invoice.invoiceDate" type="date" class="w-44" :disabled="isBusy" />
+        </UFormField>
+        <UFormField label="Due Date">
+          <UInput v-model="invoice.meta.dueDate" type="date" class="w-44" readonly />
+        </UFormField>
+        <UFormField v-if="showTerms" label="Terms" :disabled="isBusy">
+          <USelect v-model="invoice.meta.terms" :items="termsOptions" class="w-44" :disabled="isBusy" />
+        </UFormField>
+      </div>
     </div>
 
     <!-- Items Table -->
-    <UCard class="mt-6" :ui="{ opacity: isBusy ? 'opacity-50' : '' }">
+    <UCard
+      class="mt-6"
+      :ui="{
+        root: 'sm:py-0 ',
+        body: 'sm:p-0 p-0',
+        footer: 'p-0',
+      }"
+    >
       <template #header>
         <UText tag="h2" class="text-lg font-semibold">Item Details</UText>
       </template>
-      <InvoiceItemsTable :items-table="invoice.items ?? []" :status="invoice.meta.status" :scenario="invoice.scenarioId"
-        :sale-type="invoice.meta.saleType" :disabled="isBusy" @item-added="syncItems" @item-removed="syncItems"
-        @item-updated="syncItems" />
+      <InvoiceItemsTable
+        :items-table="invoice.items ?? []"
+        :status="invoice.meta.status"
+        :scenario="invoice.scenarioId"
+        :sale-type="invoice.meta.saleType"
+        :disabled="isBusy"
+        @item-added="syncItems"
+        @item-removed="syncItems"
+        @item-updated="syncItems"
+      />
       <template #footer>
         <p v-if="errors.items" class="text-red-600 text-sm">{{ errors.items }}</p>
       </template>
     </UCard>
 
-    <!-- Totals & Extras -->
-    <div class="grid grid-cols-2 gap-8 mt-6">
-      <div class="space-y-4">
-        <UFormField label="Header Discount" :disabled="isBusy">
-          <UInput v-model.number="invoice.discount" type="number" :disabled="isBusy" />
-        </UFormField>
-        <UFormField label="Shipping" :disabled="isBusy">
-          <UInput v-model.number="invoice.shipping" type="number" :disabled="isBusy" />
-        </UFormField>
-        <UFormField label="Notes" :disabled="isBusy">
-          <UTextarea v-model="invoice.meta.notes" :rows="3" :disabled="isBusy" />
-        </UFormField>
-      </div>
+    <!-- Totals & Extras Wrapper -->
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 mt-6">
+      <!-- Left: Inputs -->
+      <UCard flat class="p-4">
+        <template #header>
+          <h3 class="text-lg font-semibold">Extras &amp; Notes</h3>
+        </template>
 
-      <div class="self-end w-80 space-y-1 text-sm">
-        <div class="flex justify-between"><span>Sub-Total:</span><span>{{ fmt(subTotal) }}</span></div>
-        <div class="flex justify-between"><span>Sales Tax:</span><span>{{ fmt(totalSalesTax) }}</span></div>
-        <div class="flex justify-between"><span>Withheld Tax:</span><span>-{{ fmt(totalWithheldTax) }}</span></div>
-        <div class="flex justify-between"><span>Extra Tax:</span><span>{{ fmt(totalExtraTax) }}</span></div>
-        <div class="flex justify-between"><span>Line Discounts:</span><span>-{{ fmt(totalLineDiscount) }}</span></div>
-        <div class="flex justify-between"><span>Header Discount:</span><span>-{{ fmt(invoice.discount) }}</span></div>
-        <div class="flex justify-between"><span>Shipping:</span><span>{{ fmt(invoice.shipping) }}</span></div>
-        <div class="border-t pt-1 flex justify-between font-semibold text-lg">
-          <span>Grand Total:</span><span>{{ fmt(grandTotal) }}</span>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <UFormField label="Header Discount" label-placement="top" :disabled="isBusy">
+            <UInput v-model.number="invoice.discount" type="number" placeholder="0.00" class="w-full" :disabled="isBusy" />
+          </UFormField>
+
+          <UFormField label="Shipping" label-placement="top" :disabled="isBusy">
+            <UInput v-model.number="invoice.shipping" type="number" placeholder="0.00" class="w-full" :disabled="isBusy" />
+          </UFormField>
         </div>
-      </div>
+
+        <UFormField label="Notes" label-placement="top" :disabled="isBusy">
+          <UTextarea v-model="invoice.meta.notes" rows="5" placeholder="Any special instructions…" class="w-full" :disabled="isBusy" />
+        </UFormField>
+      </UCard>
+
+      <!-- Right: Summary Card -->
+      <UCard class="relative overflow-hidden">
+        <div class="bg-primary/10 px-4 py-3">
+          <h3 class="text-lg font-semibold text-primary">Invoice Summary</h3>
+        </div>
+
+        <div class="p-4 space-y-2 text-sm">
+          <div v-for="(row, i) in summaryRows" :key="i" class="grid grid-cols-2 items-center">
+            <span class="text-gray-600">{{ row.label }}</span>
+            <span :class="['text-right', row.isNegative ? 'text-red-600' : 'text-gray-800']">
+              {{ row.sign }}{{ fmt(row.value) }}
+            </span>
+          </div>
+
+          <UDivider class="my-2" />
+
+          <div class="grid grid-cols-2 items-center font-semibold text-lg">
+            <span class="text-gray-800">Grand Total</span>
+            <span class="text-right text-primary">{{ fmt(grandTotal) }}</span>
+          </div>
+        </div>
+      </UCard>
     </div>
 
     <!-- Actions -->
-    <div class="flex gap-2 self-end mt-8">
+    <div class="flex gap-2 justify-end mt-8">
       <UButton v-if="invoice.meta.status === 'draft'" color="primary" :loading="isBusy" :disabled="!isValid || isBusy"
         @click="validateInvoice">
         Validate
@@ -203,6 +245,15 @@
     - (invoice.discount || 0) + (invoice.shipping || 0)
   )
   const fmt = (n: number) => n.toFixed(2)
+  const summaryRows = computed(() => [
+    { label: 'Sub-Total', value: subTotal.value, sign: '', isNegative: false },
+    { label: 'Sales Tax', value: totalSalesTax.value, sign: '', isNegative: false },
+    { label: 'Withheld Tax', value: totalWithheldTax.value, sign: '-', isNegative: true },
+    { label: 'Extra Tax', value: totalExtraTax.value, sign: '', isNegative: false },
+    { label: 'Line Discounts', value: totalLineDiscount.value, sign: '-', isNegative: true },
+    { label: 'Header Discount', value: invoice.discount, sign: '-', isNegative: true },
+    { label: 'Shipping', value: invoice.shipping, sign: '', isNegative: false },
+  ])
   const showTerms = computed(() => docType !== 'credit')
   const isValid = computed(() => invoice.customerId > 0 && invoice.items.length > 0)
 

@@ -30,7 +30,7 @@ export function toDiPayload(inv: IInvoice) {
         documentTypeId: inv.documentTypeId,
         transactionTypeId: inv.transactionTypeId,
         invoiceRefNo: inv.invoiceNumber,
-        scenariola: inv.scenarioId,
+        scenarioId: inv.scenarioId,
         saleType: inv.saleType,
         sellerBusinessName: inv.sellerName,
         sellerProvince: inv.sellerProvinceCode,

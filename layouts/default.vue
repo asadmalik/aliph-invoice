@@ -8,7 +8,7 @@
       <!-- full‑width sticky toolbar -->
       <AppToolbar />
       <UApp>
-        <div v-if="route.path !== '/'" class="text-gray-600 dark:text-gray-400 text-center text-xs italic">
+        <div v-if="route.path !== '/'" class="text-gray-600 dark:text-gray-400 text-center text-xs italic print:hidden">
           <NuxtLink to="/" class="font-semibold text-primary">Home</NuxtLink>
           <template v-for="(crumb, index) in breadcrumbs" :key="crumb.to">
             <span class="text-gray-500 dark:text-gray-400"> / </span>

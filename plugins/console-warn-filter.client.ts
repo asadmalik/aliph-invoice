@@ -11,7 +11,8 @@ export default defineNuxtPlugin(() => {
     'is not a valid component name',
     'but the declaration was not found',
     'Failed to resolve component: UText',
-    '[Vue warn]: Invalid prop: type check failed for prop "rows".'
+    '[Vue warn]: Invalid prop: type check failed for prop "rows".',
+    'Failed to stringify dev server logs.',
   ]
 
   const originalWarn = console.warn

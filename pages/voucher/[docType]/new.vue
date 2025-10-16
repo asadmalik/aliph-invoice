@@ -245,6 +245,13 @@ import InvoiceItemsTable from '~/components/ui/InvoiceItemsTable.vue';
             lastStatus: 'draft' as InvoiceStatus,
         },
 
+        invoiceVoucherType: docType === 'credit' ? 'credit' : 'standard',
+        terms: termsOptions[0].value || 'Due On Receipt',
+        dueDate: initialIso,
+        billTo: 'null',
+        currencyCode: 'PKR',
+        documentTypeId: 1,
+        status: 'draft',
         meta: {
             dueDate: initialIso,
             currencyCode: 'PKR',

@@ -27,9 +27,16 @@ export class BaseRepository<T extends { id?: number }> {
         return this.table.toArray()
     }
 
+    /** Get Item Count */
+    async count(): Promise<number> {
+        return this.table.count()
+    }
+
     /** Update → returns # rows modified (0 or 1) */
     async update(id: number, changes: UpdateSpec<T>): Promise<number> {
-        return this.table.update(id, changes)
+
+        const plainChanges = JSON.parse(JSON.stringify(toRaw(changes)))
+        return this.table.update(id, plainChanges)
     }
 
     /** Delete record */

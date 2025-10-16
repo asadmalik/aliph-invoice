@@ -21,11 +21,13 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
   ui: {
-    
+    prefix: 'U',
   },
   future: {
     compatibilityVersion: 4
   },
-
+  plugins: [
+    { src: '~/plugins/dexie.client.ts', mode: 'client' }
+  ],
   compatibilityDate: '2024-11-27'
 })

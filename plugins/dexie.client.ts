@@ -7,6 +7,7 @@ import { customerRepo } from '@/DataLayer/repositories/CustomerRepository'
 import { invoiceRepo } from '@/DataLayer/repositories/InvoiceRepository'
 import { itemRepo } from '@/DataLayer/repositories/ItemRepository'
 import { taxItemRepo } from '@/DataLayer/repositories/TaxItemRepository'
+import { provinceRepo, uomRepo, hsCodeRepo, docTypeRepo, transTypeRepo, sroItemRepo } from '~/DataLayer/repositories/ReferenceRepos'
 
 export default defineNuxtPlugin(() => {
     // Anything returned in `provide` becomes available via useNuxtApp()
@@ -16,7 +17,13 @@ export default defineNuxtPlugin(() => {
             customerRepo,
             invoiceRepo,
             itemRepo,
-            taxItemRepo
+            taxItemRepo,
+            provinceRepo,
+            uomRepo,
+            hsCodeRepo,
+            docTypeRepo,
+            transTypeRepo,
+            sroItemRepo
         }
     }
 })

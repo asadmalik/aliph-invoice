@@ -33,7 +33,7 @@
                     <UButton size="sm" @click="getInvoice">Get (id)</UButton>
                     <UButton size="sm" @click="getAllInvoices">Get All</UButton>
                     <UButton size="sm" @click="updateInvoice">Update (id)</UButton>
-                    <UButton size="sm" color="red" @click="deleteInvoice">Delete (id)</UButton>
+                    <UButton size="sm" color="error" @click="deleteInvoice">Delete (id)</UButton>
                     <UButton size="sm" @click="getInvoicesByCustomer">Get By Customer</UButton>
                 </div>
                 <pre
@@ -52,7 +52,7 @@
                     <UButton size="sm" @click="getItem">Get (id)</UButton>
                     <UButton size="sm" @click="getAllItems">Get All</UButton>
                     <UButton size="sm" @click="updateItem">Update (id)</UButton>
-                    <UButton size="sm" color="red" @click="deleteItem">Delete (id)</UButton>
+                    <UButton size="sm" color="error" @click="deleteItem">Delete (id)</UButton>
                     <UButton size="sm" @click="getItemsByInvoice">Get By Invoice</UButton>
                 </div>
                 <pre
@@ -71,7 +71,7 @@
                     <UButton size="sm" @click="getTaxItem">Get (id)</UButton>
                     <UButton size="sm" @click="getAllTaxItems">Get All</UButton>
                     <UButton size="sm" @click="updateTaxItem">Update (id)</UButton>
-                    <UButton size="sm" color="red" @click="deleteTaxItem">Delete (id)</UButton>
+                    <UButton size="sm" color="error" @click="deleteTaxItem">Delete (id)</UButton>
                     <UButton size="sm" @click="findTaxByName">Find By Name</UButton>
                 </div>
                 <pre
